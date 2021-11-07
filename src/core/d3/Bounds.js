@@ -8,6 +8,7 @@ export default class Bounds {
         this.total_with = w;
         this.total_height = h;
         this.r = x + this.width;
+        this.d = y + this.height;
     }
 
     down(pts) {
@@ -22,11 +23,15 @@ export default class Bounds {
         return new Bounds(this.width, this.height, this.x + pts, this.y)
     }
 
+    withX(x) {
+        return new Bounds(this.width, this.height, x, this.y)
+    }
+
     withHeight(h) {
         return new Bounds(this.width, h, this.x, this.y)
     }
     
-    withWith(w) {
+    withWidth(w) {
         return new Bounds(w, this.height, this.x, this.y)
     }
 

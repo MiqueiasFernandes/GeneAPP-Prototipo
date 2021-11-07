@@ -3,6 +3,7 @@ import DrawableExon from './DrawableExon'
 import DrawableIntron from './DrawableIntron'
 import DrawableIsoform from './DrawableIsoform'
 import DrawableLocus from './DrawableLocus'
+import Histogram from './Histogram'
 
 export default class DrawableGene extends Drawable {
     constructor(
@@ -100,6 +101,14 @@ export default class DrawableGene extends Drawable {
         if (this.drawableLociTranscriptomic.length > 0) {
             this.text(0, this.drawableLociTranscriptomic[0].bounds.y - 20, 'Contexto Transcriptomico', { b: true })
             this.drawableLociTranscriptomic.forEach(l => l.draw())
+            const hist = new Histogram(this.drawable,
+                this.drawableLociTranscriptomic[0].bounds
+                .down(50)
+                .withX(this.bounds.x)
+                .withWidth(this.bounds.width)
+                .withHeight(100)
+                )
+            hist.draw()
         }
 
     }
