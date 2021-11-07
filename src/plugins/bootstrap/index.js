@@ -133,22 +133,22 @@ export default {
         app.directive('popover', {
             mounted(el, b) {
                 if (b.value) {
+                    let config = {container: 'body'}
                     if (typeof b.value === 'string') {
-                        el.setAttribute('data-content', b.value)
+                        config.content = b.value
                     } else {
-                        if (b.value.title) {
-                            el.title = b.value.title
-                        }
-                        if (b.value.content) {
-                            el.setAttribute('data-content', b.value.content)
-                        }
+                        // valid configs
+                        // b.value.title
+                        // b.value.content
+                        // b.value.delay
+                        // ...
+                        config = b.value
                     }
                     if (b.arg) {
-                        el.setAttribute('data-placement', b.arg)
+                        config.placement = b.arg
                     }
-                    el.setAttribute('data-container', "body")
                     el.setAttribute('data-toggle', "popover")
-                    new bootstrap.Popover(el);
+                    new bootstrap.Popover(el, config);
                 }
             }
         })

@@ -9,7 +9,8 @@
       :color="'info'"
       outline
       sm
-      v-popover="{ title: 'oi', content: 'hrllo' }"
+      v-if="gene"
+      v-popover:bottom="{ title: 'Gene1', html: true, content: buildInfo }"
       >Informações</Button
     >
     <Button ico="rulers" @click="hide()" secondary sm>Régua</Button>
@@ -61,6 +62,16 @@ export default {
       gene: null,
       comentario: "",
     };
+  },
+
+  computed: {
+    buildInfo() {
+      return [
+        `<b>Cromossomo:</b> Chr4 ${this.gene.gene.fita ? "" : "anti-"}senso`,
+        `<b>Coordenadas:</b> ${this.gene.gene.inicio}:${this.gene.gene.fim}`,
+        ...this.gene.gene.getIsoformas().map(i => `<b>${i.nome}:</b> ${i.inicio}:${i.fim}`),
+      ].join("<br>");
+    },
   },
 
   mounted() {
@@ -154,7 +165,8 @@ export default {
       return gene;
     };
 
-    const gene1 = real(); //mockGene();
+    const gene1 = mockGene();
+    real();
     const gene2 = mockGene("Gene2", false);
 
     const cd1 = "Controle";
@@ -169,6 +181,10 @@ export default {
     gene1.getIsoformas()[1].setExpressao(3, cd2);
     gene1.getIsoformas()[2].setExpressao(5, cd1);
     gene1.getIsoformas()[2].setExpressao(10, cd2);
+
+    gene1.getIsoformas()[0].addDominio(new Dominio("dom1", 3, 40));
+    gene1.getIsoformas()[1].addDominio(new Dominio("dom1", 5, 12));
+    gene1.getIsoformas()[2].addDominio(new Dominio("dom1", 5, 9));
 
     gene1.getIsoformas()[0].addDominio(new Dominio("dom1", 450, 480));
     gene1.getIsoformas()[1].addDominio(new Dominio("dom1", 160, 350));
