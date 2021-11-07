@@ -1,5 +1,5 @@
 <template>
-  <div class="toasts">
+  <div :class="['toasts', pos === 'top' ? 'onTop' : 'onBottom']">
     <div
       v-for="toast in toasts"
       :key="toast.id"
@@ -14,9 +14,10 @@
       aria-live="assertive"
       aria-atomic="true"
     >
+      <Icon v-if="toast.ico" :name="toast.ico" class="ms-2"></Icon>
       <div class="toast-body">
-        <strong class="mr-2" v-if="toast.title">{{ toast.title }}</strong
-        >{{ toast.text }}
+        <strong class="mr-2" v-if="toast.title">{{ toast.title }}</strong>
+        <p>{{ toast.text }}</p>
       </div>
       <button
         type="button"
@@ -24,6 +25,7 @@
         class="btn-close ml-auto mr-2 fix-multiline"
         data-dismiss="toast"
         aria-label="Close"
+        @click="toast.instance.hide()"
       ></button>
     </div>
   </div>
@@ -32,6 +34,7 @@
 export default {
   props: {
     global: Boolean,
+    pos: { type: String, default: "top" },
   },
   data: () => ({ toasts: [], index: 1 }),
   mounted() {
@@ -48,6 +51,7 @@ export default {
           delay: toast.delay * 1000,
         });
         toast.instance.show();
+        el.addEventListener("shown.bs.toast", () => el.classList.add("shadow"));
         el.addEventListener("hidden.bs.toast", (el) => {
           const index = this.toasts.findIndex((t) => t.id === el.target.id);
           const toast_ = this.toasts[index];
@@ -58,12 +62,13 @@ export default {
     });
   },
   methods: {
-    notify(text, title, color = "secondary", delay = 5) {
+    notify(text, title, color = "secondary", ico, delay = 5) {
       this.toasts.push({
         text,
         title,
         color,
         delay,
+        ico,
         id: `toast-${this.index++}`,
       });
     },
@@ -72,13 +77,22 @@ export default {
 </script>
 <style scoped>
 .toasts {
-  width: 25rem;
   z-index: 100;
   position: fixed;
-  top: 6rem;
   right: 8rem;
 }
+.shadow {
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px,
+    rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px,
+    rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px !important;
+}
+.onTop {
+  top: 6rem;
+}
+.onBottom {
+  bottom: 2rem;
+}
 .fix-multiline {
-  padding: .4rem;
+  padding: 0.4rem;
 }
 </style>

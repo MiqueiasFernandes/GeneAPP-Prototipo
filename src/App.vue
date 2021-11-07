@@ -3,7 +3,7 @@
     <GeneView></GeneView>
   </div>
   <Dialog global />
-  <Toast global />
+  <Toast global pos="'bottom'" />
 </template>
 
 <script>

@@ -2,10 +2,11 @@
   <Display><Icon :name="'pen'"></Icon>GeneView</Display>
 
   <div class="d-flex justify-content-evenly mt-3">
-    <Button ico="arrow-left" sm>Anterior</Button>
+    <Button ico="arrow-left" disabled sm>Anterior</Button>
 
     <Button
-      ico="info-circle-fill"
+      ico="info-circle"
+      fill
       :color="'info'"
       outline
       sm
@@ -14,11 +15,15 @@
       >Informações</Button
     >
     <Button ico="rulers" @click="hide()" secondary sm>Régua</Button>
-    <Button ico="cloud-arrow-down-fill" @click="download()" secondary sm
+    <Button ico="cloud-arrow-down" fill @click="download()" secondary sm
       >Download</Button
     >
+    <Button ico="share" fill @click="compartilhar()" success sm
+      >Compartilhar</Button
+    >
     <Button
-      ico="chat-text-fill"
+      ico="chat-text"
+      fill
       @click="comment()"
       secondary
       sm
@@ -69,7 +74,9 @@ export default {
       return [
         `<b>Cromossomo:</b> Chr4 ${this.gene.gene.fita ? "" : "anti-"}senso`,
         `<b>Coordenadas:</b> ${this.gene.gene.inicio}:${this.gene.gene.fim}`,
-        ...this.gene.gene.getIsoformas().map(i => `<b>${i.nome}:</b> ${i.inicio}:${i.fim}`),
+        ...this.gene.gene
+          .getIsoformas()
+          .map((i) => `<b>${i.nome}:</b> ${i.inicio}:${i.fim}`),
       ].join("<br>");
     },
   },
@@ -344,6 +351,16 @@ export default {
           { label: "Salvar", ico: "check2", click: (dt) => salvar(dt) },
         ],
       });
+    },
+
+    compartilhar(text) {
+      text = text || window.location.href;
+      const res = (title, txt, c) =>
+        this.$toast(txt, title, c, "clipboard-check");
+      navigator.clipboard.writeText(text).then(
+        () => res("Copiado", "com sucesso para a área de transferencia!"),
+        () => res("ERRO", "ao copiar para a área de transferencia.", "danger")
+      );
     },
   },
 };
