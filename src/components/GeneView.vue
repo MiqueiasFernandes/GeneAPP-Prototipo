@@ -348,7 +348,7 @@ export default {
             color: "danger",
             click: (dt) => apagar(dt),
           },
-          { label: "Salvar", ico: "check2", click: (dt) => salvar(dt) },
+          { label: "Salvar", ico: "check2", click: (dt) => salvar(dt) , auto: true}, 
         ],
       });
     },

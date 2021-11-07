@@ -6,7 +6,9 @@
           <h5 class="modal-title d-flex align-items-center">
             <slot name="header"
               ><Icon sm :name="current.ico" v-if="current.ico" />
-              <span :class="current.ico ? 'ms-2' : ''">{{ current.title }}</span></slot
+              <span :class="current.ico ? 'ms-2' : ''">{{
+                current.title
+              }}</span></slot
             >
           </h5>
           <button
@@ -24,7 +26,8 @@
               v-for="input in current.form"
               :key="input.id || input.label"
             >
-              <label v-if="!input.hide_label"
+              <label
+                v-if="!input.hide_label"
                 :for="input.id || input.label"
                 class="col-sm-2 col-form-label"
                 >{{ input.label || input.id }}</label
@@ -36,6 +39,7 @@
                   :id="input.id || input.label"
                   :placeholder="input.placeholder"
                   v-model="input.value"
+                  @keydown.enter="automaticClose()"
                 />
               </div>
             </div>
@@ -110,12 +114,13 @@ export default {
       center: t.center || (t.queue.length > 0 ? t.queue[0].center : false),
       scrool: t.scrool || (t.queue.length > 0 ? t.queue[0].scrool : false),
       static: t.static || (t.queue.length > 0 ? t.queue[0].static : false),
-      onClosed: t.queue.length > 0 && t.queue[0].onClosed ? t.queue[0].onClosed : null,
+      onClosed:
+        t.queue.length > 0 && t.queue[0].onClosed ? t.queue[0].onClosed : null,
       sm: t.sm || (t.queue.length > 0 ? t.queue[0].sm : false),
       lg: t.lg || (t.queue.length > 0 ? t.queue[0].lg : false),
       btn_center:
         t.btn_center || (t.queue.length > 0 ? t.queue[0].btn_center : false),
-      focus: (t.queue.length > 0 ? t.queue[0].focus : t.focus) ||  "dialog",
+      focus: (t.queue.length > 0 ? t.queue[0].focus : t.focus) || "dialog",
     }),
   },
   data: () => ({ modal: null, queue: [], shake_dialog: "" }),
@@ -127,7 +132,7 @@ export default {
     );
     this.$refs.modal.addEventListener("hidden.bs.modal", () => {
       this.$emit("close");
-      if (this.current.onClosed) this.current.onClosed()
+      if (this.current.onClosed) this.current.onClosed();
       this.next();
     });
     if (this.global) {
@@ -170,6 +175,9 @@ export default {
     },
     close() {
       this.hide();
+    },
+    automaticClose() {
+      this.current.actions.forEach((btn) => btn.auto && this.click(btn));
     },
   },
 };
