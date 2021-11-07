@@ -3,7 +3,8 @@ export default class Dominio {
     constructor(
         nome,
         inicio,
-        fim
+        fim,
+        color='#ffa'
     ) {
 
         this.nome = nome
@@ -11,5 +12,6 @@ export default class Dominio {
         this.fim = fim
         this.isoforma = undefined
         this.loci = []
+        this.color = color
     }
 }

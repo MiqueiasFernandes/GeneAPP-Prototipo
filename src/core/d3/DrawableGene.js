@@ -93,22 +93,37 @@ export default class DrawableGene extends Drawable {
 
         //Contexto Genomico (Genes, Microsatelite, Transposons, SNV/SNP)
         if (this.drawableLociGenomic.length > 0) {
-            this.text(0, this.drawableLociGenomic[0].bounds.y - 20, 'Contexto Genomico', { b: true })
+            this.text(0, this.drawableLociGenomic[0].bounds.y - 20, 'Contexto Genomico', 
+            { b: true, s: '#ffa000', c: 'yellow' })
             this.drawableLociGenomic.forEach(l => l.draw())
         }
 
         //Contexto transcriptomico (ncRNA mi, lnc ...) expressao
         if (this.drawableLociTranscriptomic.length > 0) {
-            this.text(0, this.drawableLociTranscriptomic[0].bounds.y - 20, 'Contexto Transcriptomico', { b: true })
+            this.text(0, this.drawableLociTranscriptomic[0].bounds.y - 20, 'Contexto Transcriptomico', 
+            { b: true, s: '#ffa000', c: 'yellow' })
             this.drawableLociTranscriptomic.forEach(l => l.draw())
             const hist = new Histogram(this.drawable,
                 this.drawableLociTranscriptomic[0].bounds
-                .down(50)
-                .withX(this.bounds.x)
-                .withWidth(this.bounds.width)
-                .withHeight(100)
-                )
+                    .down(30)
+                    .withX(this.bounds.x)
+                    .withWidth(this.bounds.width)
+                    .withHeight(100)
+            )
             hist.draw()
+        }
+
+        //Context proteomico (dominios de proteinas)
+        const all_doms = []
+        this.drawableIsoforms.forEach(i => i.drawableDominios.forEach(d => d.forEach(x => all_doms.push(x))))
+        const yd = 15
+        if (all_doms.length > 0) {
+            this.text(0, 485, 'Contexto Proteomico', { b: true, s: '#ffa000', c: 'yellow' })
+            all_doms.sort((a, b) => a.bounds.x - b.bounds.x).forEach((dom, i) => {
+                const x = dom.bounds.x, y = 490 + i * yd
+                this.rect(x, y, dom.bounds.width, 20, dom.dominio.color, 8).style('stroke', 'gray')
+                this.text(x + dom.bounds.width / 2, y + 14, dom.dominio.nome, { hc: true })
+            });
         }
 
     }

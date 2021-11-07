@@ -1,5 +1,5 @@
 <template>
-  <Display><Icon :name="'pen'"></Icon>GeneView</Display>
+  <Display :size="6"><Icon :name="'pen'" fill></Icon><strong>GeneView</strong></Display>
 
   <div class="d-flex justify-content-evenly mt-3">
     <Button ico="arrow-left" disabled sm>Anterior</Button>
@@ -189,13 +189,13 @@ export default {
     gene1.getIsoformas()[2].setExpressao(5, cd1);
     gene1.getIsoformas()[2].setExpressao(10, cd2);
 
-    gene1.getIsoformas()[0].addDominio(new Dominio("dom1", 3, 40));
-    gene1.getIsoformas()[1].addDominio(new Dominio("dom1", 5, 12));
-    gene1.getIsoformas()[2].addDominio(new Dominio("dom1", 5, 9));
+    gene1.getIsoformas()[0].addDominio(new Dominio("PFAM12", 3, 40, '#ffb'));
+    gene1.getIsoformas()[1].addDominio(new Dominio("SMRT23", 5, 12, '#bff'));
+    gene1.getIsoformas()[2].addDominio(new Dominio("PANTHER3", 5, 9, '#bfb'));
 
-    gene1.getIsoformas()[0].addDominio(new Dominio("dom1", 450, 480));
-    gene1.getIsoformas()[1].addDominio(new Dominio("dom1", 160, 350));
-    gene1.getIsoformas()[2].addDominio(new Dominio("dom1", 30, 80));
+    gene1.getIsoformas()[0].addDominio(new Dominio("PFAM12", 450, 480, '#ffb'));
+    gene1.getIsoformas()[1].addDominio(new Dominio("SMRT23", 160, 350, '#ffaaaa'));
+    gene1.getIsoformas()[2].addDominio(new Dominio("PANTHER3", 30, 80, '#fcb'));
 
     gene2.getIsoformas()[0].addDominio(new Dominio("dom1", 1, 5));
     gene2.getIsoformas()[1].addDominio(new Dominio("dom1", 9, 16));
@@ -204,7 +204,7 @@ export default {
     const drawable = new Drawable(
       null,
       "canvas",
-      new Bounds(800, 500, 0, 0, { top: 20, bottom: 50, right: 200, left: 100 })
+      new Bounds(800, 600, 0, 0, { top: 20, bottom: 50, right: 200, left: 100 })
     );
 
     const transposon_draw_strategy = (l) =>

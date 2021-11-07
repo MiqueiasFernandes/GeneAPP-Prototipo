@@ -69,6 +69,8 @@ export default class Drawable {
         if (estilo.fs) txt.style('font-size', estilo.fs)
         if (estilo.r) txt.attr('transform', `rotate(${estilo.r} ${x},${y})`)
         if (estilo.hc) txt.style('text-anchor', 'middle')
+        if (estilo.c) txt.style('fill', estilo.c)
+        if (estilo.s) txt.style('stroke', estilo.s)
         return txt;
     }
 
@@ -120,14 +122,14 @@ export default class Drawable {
             .attr("stroke-width", sw);
     }
 
-    curva({x, y, w, x2, h=20, c, sw, f}) {
+    curva({ x, y, w, x2, h = 20, c, sw, f }) {
         const _x2 = (x2 ? x2 : (x + w)) - x
         const p = `M ${x},${y} c 0,${h} ${_x2},${h} ${_x2},0`
         return this.path(p, c, sw, f)
     }
 
     triangulo(x, y, w, h, f = 'black', c = 'none', sw) {
-        const p = `M ${x - w/2},${y} l ${w},0 l ${-w/2},${-(h||w)} z`
+        const p = `M ${x - w / 2},${y} l ${w},0 l ${-w / 2},${-(h || w)} z`
         return this.path(p, c, sw, f)
     }
 
@@ -215,19 +217,23 @@ export default class Drawable {
     ) {
         pos = pos || d3.axisBottom
         var x_axis = d3.scaleLinear().domain([start, end]).range([0, width]);
+        const ppx = (1 + end - start) / width
         const g = this.svg
             .append("g")
             .attr("transform", `translate(${x},${y})`)
             .call(pos(x_axis));
 
         if (regua) {
-            regua = this.line({ v: -999, y1: y, y2: y + h, c: "gray" });
-            this.line({ h: y, x1: x, x2: x + width, sw: 8 }).on(
+            regua = this.line({ v: -999, y1: y - 11, y2: y + h, c: "gray" });
+            const regua2 = this.text(-999, y - 15, '154', { hc: true, fs: '.8rem', serif: true });
+            this.line({ h: y, x1: x, x2: 1 + x + width, sw: 8 }).on(
                 "mousemove",
                 (coord) =>
                     regua &&
                     regua.attr("x1", coord.offsetX - offsetX) &&
-                    regua.attr("x2", coord.offsetX - offsetX)
+                    regua.attr("x2", coord.offsetX - offsetX) &&
+                    regua2.attr("x", coord.offsetX - offsetX) &&
+                    regua2.text(parseInt(start + ppx * (coord.offsetX - offsetX)))
             );
         }
         return g;
