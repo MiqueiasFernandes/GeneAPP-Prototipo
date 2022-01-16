@@ -7,16 +7,16 @@
       </a>
 
       <ul class="nav nav-pills">
-        <li class="nav-item"><a href="#" class="nav-link active" aria-current="page">Novo</a></li>
-        <li class="nav-item"><a href="#" class="nav-link">Features</a></li>
-        <li class="nav-item"><a href="#" class="nav-link">Pricing</a></li>
-        <li class="nav-item"><a href="#" class="nav-link">FAQs</a></li>
-        <li class="nav-item"><a href="#" class="nav-link">About</a></li>
+        <li class="nav-item"><a href="#" @click="pagina='NOVO'"
+        :class="{ 'nav-link': true, active : pagina == 'NOVO' }">Novo</a></li>
+        <li class="nav-item"><a href="#"  @click="pagina='OVERVIEW'"
+        :class="{ 'nav-link': true, active : pagina == 'OVERVIEW' }">GeneAPP</a></li>
       </ul>
     </header>
   </div>
   <div class="container mt-5">
-    <GeneView></GeneView>
+    <ImportView v-if="pagina == 'NOVO'"></ImportView>
+    <GeneView v-if="pagina == 'OVERVIEW'"></GeneView>
   </div>
   <Dialog global />
   <Toast global pos="'bottom'" />
@@ -24,12 +24,22 @@
 
 <script>
 import GeneView from "./components/GeneView.vue";
+import ImportView from './components/ImportView.vue';
+
+
 require('./assets/img/logo.png');
 
 export default {
   name: "App",
   components: {
     GeneView,
+    ImportView
+  },
+
+    data() {
+    return {
+      pagina: 'NOVO',
+    };
   },
 };
 </script>

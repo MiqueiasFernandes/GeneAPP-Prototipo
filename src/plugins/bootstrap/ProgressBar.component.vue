@@ -55,7 +55,7 @@ export default {
       return pre;
     },
   },
-  data: () => ({ width: 70 }),
+  data: () => ({ width: 0 }),
   methods: {
     setValue(value) {
       this.setPercent(parseInt((100 * value) / this.max));
