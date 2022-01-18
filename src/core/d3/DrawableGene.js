@@ -9,7 +9,7 @@ export default class DrawableGene extends Drawable {
     constructor(
         drawable, gene, bounds
     ) {
-        super(drawable, null, bounds, null, gene.nome)
+        super(drawable, null, bounds, null, `svggene${gene.nome}`)
         this.gene = gene
         this.canvas = this;
 

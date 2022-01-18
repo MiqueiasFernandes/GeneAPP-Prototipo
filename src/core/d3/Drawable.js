@@ -36,9 +36,14 @@ export default class Drawable {
     }
 
     clear(element) {
-        d3
-            .select(element)
-            .remove("svg")
+        if (document.getElementById(element)) {
+            [...document.getElementById(element).children].forEach((e) =>
+                e.remove()
+            );
+        }
+        Drawable.used_patterns = [];
+        Drawable.sed_patterns_basic_color = {};
+        Drawable.spectros = [[]];
     }
 
     circ(x, y, r, c = "black") {
