@@ -36,7 +36,7 @@
             :class="{
               'nav-link': true,
               active: state == 2,
-              
+              disabled: !pronto || state > 2
             }"
             >Single View</a
           >
@@ -45,9 +45,9 @@
     </header>
   </div>
   <div class="container mt-5">
-    <ImportView ref="import" v-if="state == 1" ></ImportView>
+    <ImportView @pronto="step1ok($event)" v-if="state == 1" ></ImportView>
     <!-- bulk view -->
-    <SingleView v-if="state == 2" :genes="genes"></SingleView>
+    <SingleView v-if="state == 2" ref="single"></SingleView>
     <!-- download data -->
     <!-- sobre -->
   </div>
@@ -74,17 +74,22 @@ export default {
       genes: null,
       carregado: false,
       state: 1,
+      pronto: false
     };
   },
 
   methods: {
+    step1ok(data) {
+      this.pronto = true;
+      this.genes = data[0];
+      this.files = data[1];
+    },
     ir_pagina() {
-      switch (this.state) {
-        case 1:
-          this.genes = this.$refs.import.getGenes();
-          break;
-      }
       this.state++;
+      setTimeout(() => {
+        this.$refs.single.set_data(this.genes, this.files);
+      }, 3000);
+      
     },
   },
 };

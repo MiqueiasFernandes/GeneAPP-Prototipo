@@ -1,5 +1,20 @@
 <template>
-  importt view <Button @click="getGeneTable()">carregar</Button>
+  importt view 
+  
+  <!-- <a href="coverage.bed">download BED de exemplo</a> -->
+  
+  <Button @click="getGeneTable()">carregar</Button>
+  <File
+    @files="ver($event)"
+    @load="prg($event)"
+    @parsed="read($event)"
+    txt
+    :types="['bed']"
+    :max="10"
+  ></File>
+
+  <ProgressBar ref="prog" labelabs :min="0" :max="files.length"></ProgressBar>
+
   <ProgressBar
     v-if="genes.length > 0 && !carregado"
     ref="progress"
@@ -20,9 +35,10 @@
 </template>
 
 <script>
+
 import axios from "axios";
-const efetch_host = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi";
-const efetch_query = "db=gene&rettype=gene_table&retmode=text&id=";
+const efetch_host = "http://192.168.64.3";//https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi";
+const efetch_query = "/";//"?db=gene&rettype=gene_table&retmode=text&id=";
 import Isoforma from "../core/locus/Isoforma";
 import Exon from "../core/locus/Exon";
 import CDS from "../core/locus/CDS";
@@ -34,11 +50,15 @@ class GeneTable {
   status = "unload";
   constructor(name) {
     this.name = name;
+    const url = `${efetch_host}${efetch_query}${name}`;
+    console.log(url);
+
     axios
-      .get(`${efetch_host}?${efetch_query}${name}`)
+      .get(url)
       .then((resp) => {
-        this.status = "loaded";
         this.data = resp.data;
+        this.getParsed();
+        this.status = "loaded";
       })
       .catch(() => (this.status = "error"));
   }
@@ -86,10 +106,18 @@ class GeneTable {
         const n_exons = parseInt(
           m[0].split(`${mrna_id}, `)[1].split(" exons, ")[0]
         );
-        exons = m.slice(5, 5+n_exons).map(e => e.trim().replace(/\s+/g, ',').split(','));
-        exons = exons.map(e => e.filter(x => x.includes('-')).length < 4 ? e[0].split('-') : (e[0]+'-'+e[1]).split('-'));
-        cds = exons.filter(e => e.length > 2).map(e => [parseInt(e[2]), parseInt(e[3])])
-        exons = exons.map(e => [parseInt(e[0]), parseInt(e[1])])
+        exons = m
+          .slice(5, 5 + n_exons)
+          .map((e) => e.trim().replace(/\s+/g, ",").split(","));
+        exons = exons.map((e) =>
+          e.filter((x) => x.includes("-")).length < 4
+            ? e[0].split("-")
+            : (e[0] + "-" + e[1]).split("-")
+        );
+        cds = exons
+          .filter((e) => e.length > 2)
+          .map((e) => [parseInt(e[2]), parseInt(e[3])]);
+        exons = exons.map((e) => [parseInt(e[0]), parseInt(e[1])]);
       }
       return { mrna_id, protein, exons, cds };
     });
@@ -104,10 +132,12 @@ class GeneTable {
 }
 
 export default {
+  emits: ["pronto"],
   data() {
     return {
       carregado: false,
       genes: [],
+      files: [],
     };
   },
   methods: {
@@ -128,14 +158,24 @@ export default {
 
     loaded() {
       this.carregado = true;
+      const dt = [
+        this.getGenes(),
+        this.files.map((f) => ({
+          name: f.file.name,
+          data: f.txt.split("\n").map((l) => l.split("\t")),
+        })),
+      ];
+      console.log(dt);
+      this.$emit("pronto", dt);
     },
 
     getGenes() {
-      return this.genes.map(g => this.parseGene(g));
+      return this.genes.map((g) => this.parseGene(g));
     },
 
-  parseGene(gene_table) {
+    parseGene(gene_table) {
       const { name, parsed } = gene_table;
+
       const { organism, seq, gid, from, to, strand, mrnas, gene } = parsed;
       const _gene = new Gene(
         name,
@@ -165,6 +205,18 @@ export default {
       });
       isos.forEach((iso) => _gene.addIsoforma(iso));
       return _gene;
+    },
+
+    ver(files) {
+      this.files = files;
+    },
+
+    prg(dt) {
+      this.$refs.prog.setValue(dt[0]);
+    },
+
+    read(files) {
+      this.files = files;
     },
   },
 };

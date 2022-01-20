@@ -44,12 +44,13 @@
 </template>
 <script>
 export default {
-  emits: ["files"],
+  emits: ["files", "parsed", "load"],
   props: {
     disabled: Boolean,
     lg: Boolean,
     img: Boolean,
     ico: String,
+    txt: Boolean,
     min: {
       type: Number,
       default: 0,
@@ -104,12 +105,15 @@ export default {
     setFile(event) {
       if (event.target && event.target.files) {
         this.files = this.validFile();
+        if (this.txt) {
+          this.toText();
+        }
         this.removed = !this.files;
       }
     },
 
     validFile(or = null) {
-      const files = this.$refs.file.files;
+      const files = [...this.$refs.file.files];
       if (!files) {
         return or;
       }
@@ -128,9 +132,9 @@ export default {
 
       files.forEach((file) => {
         if (
-          !file.type ||
-          (this.extension &&
-            this.extension.every((t) => file.type.indexOf(`${t}`) !== 0))
+          this.extension &&
+          this.extension.length > 0 &&
+          this.extension.every((t) => !file.name.endsWith(t))
         ) {
           if (!erros.includes(file.type)) {
             erros.push(file.type);
@@ -162,6 +166,35 @@ export default {
     resetInput() {
       this.$refs.file.files = null;
       this.$refs.file.value = null;
+    },
+
+    toText() {
+      const parsed = this.files.map((f) => ({
+        file: f,
+        status: 0,
+        txt: null,
+      }));
+      const int = setInterval(() => {
+        if (parsed.every((f) => f.status > 1)) {
+          clearInterval(int);
+          this.$emit("parsed", parsed);
+        } else {
+          if (!parsed.some((f) => f.status === 1)) {
+            const file = parsed.filter((f) => f.status < 1)[0];
+            file.status++;
+            var reader = new FileReader();
+            reader.onload = (reader) => {
+              file.txt = reader.target.result;
+              file.status++;
+              this.$emit("load", [
+                parsed.filter((p) => p.status > 1).length,
+                parsed.length,
+              ]);
+            };
+            reader.readAsText(file.file);
+          }
+        }
+      }, 300);
     },
   },
 };

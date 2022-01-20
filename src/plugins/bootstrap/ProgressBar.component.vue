@@ -10,6 +10,7 @@
       :aria-valuemax="max"
     >
       <span v-if="label">{{ width }}%</span>
+      <span v-if="labelabs">{{ value }}</span>
     </div>
   </div>
 </template>
@@ -21,6 +22,10 @@ export default {
       default: true,
     },
     label: {
+      type: Boolean,
+      default: false,
+    },
+    labelabs: {
       type: Boolean,
       default: false,
     },
@@ -55,9 +60,10 @@ export default {
       return pre;
     },
   },
-  data: () => ({ width: 0 }),
+  data: () => ({ width: 0, value: 0 }),
   methods: {
     setValue(value) {
+      this.value = value;
       this.setPercent(parseInt((100 * value) / this.max));
     },
     setPercent(percent) {

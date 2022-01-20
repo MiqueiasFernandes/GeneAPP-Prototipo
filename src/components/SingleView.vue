@@ -2,9 +2,13 @@
   Single View genes carregados {{ genes.length }}
   <Button :disabled="!has_prev" @click="prev()">PREV</Button>
   <Button :disabled="!has_next" @click="next()">NEXT</Button>
+  <ol v-for="file of files" :key="file.name">
+    <li>{{ file.name }}</li>
+  </ol>
 
   <div v-if="gene">
-    gene ativo {{ gene.nome }}
+    gene ativo {{ gene.nome }} {{ gene.sequencia }} {{ gene.inicio }}
+    {{ gene.fim }}
     <div id="canvas"></div>
   </div>
 </template>
@@ -13,14 +17,9 @@
 import Drawable from "../core/d3/Drawable";
 import Bounds from "../core/d3/Bounds";
 import DrawableGene from "../core/d3/DrawableGene";
+import Histogram from "../core/d3/Histogram";
 
 export default {
-  props: {
-    genes: {
-      type: Array,
-      default: () => [],
-    },
-  },
   computed: {
     has_prev() {
       return this.genes.indexOf(this.gene) > 0;
@@ -31,15 +30,22 @@ export default {
   },
   data() {
     return {
+      genes: [],
       gene: null,
       drawable: null,
+      files: [],
     };
   },
-  mounted() {
-    this.gene = this.genes[0];
-    this.plotarGene();
-  },
+  mounted() {},
   methods: {
+    set_data(genes, files) {
+      console.log(genes);
+      console.log(files);
+      genes.forEach((g) => this.$data.genes.push(g));
+      files.forEach((f) => this.$data.files.push(f));
+      this.gene = this.genes[0];
+      this.plotarGene();
+    },
     prev() {
       this.gene = this.genes[this.genes.indexOf(this.gene) - 1];
       this.plotarGene();
@@ -65,11 +71,32 @@ export default {
           left: 100,
         })
       );
-      new DrawableGene(
+      const dg = new DrawableGene(
         this.drawable,
         this.gene,
         new Bounds(600, 300, 0, 60, { left: 82, right: 15 })
-      ).draw();
+      );
+      dg.draw();
+
+      const dt = {}
+this.files[0].data.map(x => ([parseInt(x[1]), parseInt(x[3])])).filter(a => a[0] > 0)
+.forEach(x => dt[x[0]] =x[1] );
+this.files[0].data.map(x => ([parseInt(x[2]), parseInt(x[3])])).filter(a => a[0] > 0)
+.forEach(x => dt[x[0]] =x[1] );
+console.log(dt)
+      const hist = new Histogram(
+        dg,
+        dg.bounds
+          .down(200)
+          .withX(dg.bounds.x)
+          .withWidth(dg.bounds.width)
+          .withHeight(100),
+          {
+            samp1: { rep1:  dt},
+            samp2: {rep1: {}}
+          }
+      );
+      hist.draw();
     },
   },
 };
