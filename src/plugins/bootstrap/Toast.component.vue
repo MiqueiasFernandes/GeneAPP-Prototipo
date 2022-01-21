@@ -5,7 +5,7 @@
       :key="toast.id"
       :ref="toast.id"
       :id="toast.id"
-      class="toast config d-flex align-items-center border-0"
+      class="toast config d-flex align-items-center border-0 mb-3"
       :class="[
         toast.color === 'light' ? '' : 'text-white',
         `bg-${toast.color}`,
@@ -79,7 +79,7 @@ export default {
 .toasts {
   z-index: 100;
   position: fixed;
-  right: 8rem;
+  right: 2rem;
 }
 .shadow {
   box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px,

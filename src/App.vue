@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <header
-      class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom"
+      class="d-flex nav flex-wrap justify-content-center py-3 mb-4 border-bottom fixed-top shadow  navbar-light px-5"
     >
       <a
         href="/"
@@ -14,7 +14,7 @@
         "
       >
         <img src="./assets/img/logo.png" width="40" />
-        <span class="fs-4">GeneAPP</span>
+        <span class="fs-4 me-1">GeneAPP</span> <Badge color="info" round sm>1</Badge>
       </a>
 
       <ul class="nav nav-pills">
@@ -46,11 +46,25 @@
           >
         </li>
         <li class="nav-item mx-2"><a href="#" class="nav-link"><Icon sm class="me-2" name='cloud-arrow-down'></Icon>Export Results</a></li>
-        <li class="nav-item mx-2"><a href="#" class="nav-link"><Icon sm class="me-2" name='life-preserver'></Icon>About</a></li>
+        <!-- <li class="nav-item"><a href="#" class="nav-link"><Icon sm class="me-2" name='life-preserver'></Icon>About</a></li> -->
+
+<li class="nav-item mx-2 dropdown">
+          <a class="nav-link dropdown-toggle" href="#"  role="button" data-bs-toggle="dropdown" aria-expanded="false">
+           <Icon sm class="me-2" name='person'></Icon> More
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDarkDropdownMenuLink">
+            <li><a class="dropdown-item" href="#"><Icon sm class="me-2" name='people'></Icon>About</a></li>
+            <li><a class="dropdown-item" href="#"><Icon sm class="me-2" name='life-preserver'></Icon>Help</a></li>
+            <li><a class="dropdown-item" href="#"><Icon sm class="me-2" name='gear'></Icon>Settings</a></li>
+          </ul>
+        </li>
+
       </ul>
     </header>
   </div>
-  <div class="container mt-5">
+  <div class="container content">
+    <div class="card shadow-sm">
+  <div class="card-body">
     <ImportView @pronto="step1ok($event)" v-if="state == 1" ></ImportView>
     <!-- bulk view -->
     <SingleView v-if="state == 2" ref="single"></SingleView>
@@ -59,6 +73,7 @@
   </div>
   <Dialog global />
   <Toast global pos="'bottom'" />
+    </div></div>
 </template>
 
 <script>
@@ -76,7 +91,8 @@ export default {
   },
 
   mounted() {
-    this.$toast('This site use cookies', 'Alert!', 'secondary', "exclamation-triangle", 999999);
+    this.$toast('This site use cookies', 'Alert!', 'secondary', "cone-striped", 999999);
+    this.$toast('Configure your user mail to use external APIs.', 'Welcome!', 'secondary', "flag-fill", 999999);
   },
 
   data() {
@@ -105,8 +121,14 @@ export default {
 };
 </script>
 <style scoped>
+.nav{
+  background: rgb(240 255 255 / 98%);
+}
 .menu {
   align-items: center;
     display: flex
+}
+.content {
+  margin-top: 6rem;
 }
 </style>

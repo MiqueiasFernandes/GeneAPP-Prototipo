@@ -11,7 +11,7 @@
           aria-expanded="false"
           aria-controls="flush-collapseOne"
         >
-         <Icon class="me-3 success" sm name='check2-circle'></Icon> Load Analise data
+         <Icon class="me-3 success" sm name='check2-circle'></Icon> <strong>Load Analise data</strong>
         </button>
       </h2>
       <div
@@ -27,6 +27,17 @@
             <li>tabela rmats/3dranse</li>
             <li>adicionar dado q falta na tabela</li>
           </ul>
+
+  <Button @click="getGeneTable()">carregar</Button>
+  <ProgressBar
+    v-if="genes.length > 0 && !carregado"
+    ref="progress"
+    label
+    :min="0"
+    :max="genes.length"
+  ></ProgressBar>
+
+
         </div>
       </div>
     </div>
@@ -54,6 +65,19 @@
             <li>bed</li>
             <li>anotacao interpro (baixar | api)</li>
           </ul>
+
+
+  <File
+    @files="ver($event)"
+    @load="prg($event)"
+    @parsed="read($event)"
+    txt
+    :types="['bed']"
+    :max="10"
+  ></File>
+
+  <ProgressBar ref="prog" labelabs :min="0" :max="files.length"></ProgressBar>
+
         </div>
       </div>
     </div>
@@ -67,7 +91,7 @@
           aria-expanded="false"
           aria-controls="flush-collapseThree"
         >
-         <Badge class="me-3">3</Badge>   Load extra data
+         <Badge class="me-3">3</Badge> <strong>  Load extra data </strong>
         </button>
       </h2>
       <div
@@ -87,25 +111,8 @@
 
   <!-- <a href="coverage.bed">download BED de exemplo</a> -->
 
-  <Button @click="getGeneTable()">carregar</Button>
-  <File
-    @files="ver($event)"
-    @load="prg($event)"
-    @parsed="read($event)"
-    txt
-    :types="['bed']"
-    :max="10"
-  ></File>
 
-  <ProgressBar ref="prog" labelabs :min="0" :max="files.length"></ProgressBar>
 
-  <ProgressBar
-    v-if="genes.length > 0 && !carregado"
-    ref="progress"
-    label
-    :min="0"
-    :max="genes.length"
-  ></ProgressBar>
 
   <div v-if="carregado">
     <ol v-for="gene of genes" :key="gene.name">
