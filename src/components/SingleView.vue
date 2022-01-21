@@ -82,7 +82,7 @@ export default {
 this.files[0].data.map(x => ([parseInt(x[1]), parseInt(x[3])])).filter(a => a[0] > 0)
 .forEach(x => dt[x[0]] =x[1] );
 this.files[0].data.map(x => ([parseInt(x[2]), parseInt(x[3])])).filter(a => a[0] > 0)
-.forEach(x => dt[x[0]] =x[1] );
+.forEach(x => dt[x[0]] = (x[1] > 0 ? Math.log2(x[1]) : 0) );
 console.log(dt)
       const hist = new Histogram(
         dg,

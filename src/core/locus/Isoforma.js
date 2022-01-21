@@ -63,6 +63,12 @@ export default class Isoforma extends Locus {
         return this.cds_sorted;
     }
 
+    getProteinName() {
+        if (this.cds.length < 1)
+            return null
+        return this.cds[0].nome;
+    }
+
     getExonByPos(pos) {
         for (let i = 0; i < this.exons.length; i++) {
             if (this.exons[i].contem(pos))
