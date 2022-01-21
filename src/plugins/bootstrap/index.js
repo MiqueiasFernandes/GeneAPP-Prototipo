@@ -162,9 +162,9 @@ export default {
         //Toast
         app.component("Toast", Toast)
         app.config.globalProperties.$toast_handler = (tc) => this.toast_component = tc;
-        app.config.globalProperties.$toast = (text, title, color, delay) => {
+        app.config.globalProperties.$toast = (text, title, color, ico, delay) => {
             if (this.toast_component) {
-                this.toast_component.notify(text, title, color, delay);
+                this.toast_component.notify(text, title, color, ico, delay);
             }
         };
 

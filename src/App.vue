@@ -75,6 +75,10 @@ export default {
     SingleView
   },
 
+  mounted() {
+    this.$toast('This site use cookies', 'Alert!', 'secondary', "exclamation-triangle", 999999);
+  },
+
   data() {
     return {
       genes: null,

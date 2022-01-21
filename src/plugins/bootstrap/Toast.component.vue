@@ -5,7 +5,7 @@
       :key="toast.id"
       :ref="toast.id"
       :id="toast.id"
-      class="toast d-flex align-items-center border-0"
+      class="toast config d-flex align-items-center border-0"
       :class="[
         toast.color === 'light' ? '' : 'text-white',
         `bg-${toast.color}`,
@@ -15,9 +15,9 @@
       aria-atomic="true"
     >
       <Icon v-if="toast.ico" :name="toast.ico" class="ms-2"></Icon>
-      <div class="toast-body">
-        <strong class="mr-2" v-if="toast.title">{{ toast.title }}</strong>
-        <p>{{ toast.text }}</p>
+      <div class="toast-body content">
+        <strong class="mr-2 me-2" v-if="toast.title">{{ toast.title }}</strong>
+        <span>{{ toast.text }}</span>
       </div>
       <button
         type="button"
@@ -92,6 +92,18 @@ export default {
 .onBottom {
   bottom: 2rem;
 }
+.config {
+  min-width: 500px;
+  justify-content: space-between;
+  padding: .5rem 1rem;
+}
+
+.content {
+  width: 90%;
+  display: flex;
+  align-items: center;
+}
+
 .fix-multiline {
   padding: 0.4rem;
 }
