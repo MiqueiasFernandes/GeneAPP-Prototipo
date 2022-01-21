@@ -18,18 +18,22 @@
       </a>
 
       <ul class="nav nav-pills">
-        <li class="nav-item">
+        <li class="nav-item mx-2">
           <a
             href="#"
             :class="{
+              'menu': true,
               'nav-link': true,
               active: state < 2,
               disabled: state > 1,
             }"
-            >Nova analise</a
+            ><Icon sm class="me-2" name='magic'></Icon>Import Data</a
           >
         </li>
-        <li class="nav-item">
+        <li class="nav-item mx-2"><a href="#" class="nav-link"><Icon sm class="me-2" name='minecart-loaded'></Icon>
+        Bulk View</a></li>
+        
+        <li class="nav-item mx-2">
           <a
             href="#"
             @click="ir_pagina()"
@@ -38,9 +42,11 @@
               active: state == 2,
               disabled: !pronto || state > 2
             }"
-            >Single View</a
+            ><Icon sm class="me-2" name='funnel'></Icon>Single View</a
           >
         </li>
+        <li class="nav-item mx-2"><a href="#" class="nav-link"><Icon sm class="me-2" name='cloud-arrow-down'></Icon>Export Results</a></li>
+        <li class="nav-item mx-2"><a href="#" class="nav-link"><Icon sm class="me-2" name='life-preserver'></Icon>About</a></li>
       </ul>
     </header>
   </div>
@@ -59,7 +65,7 @@
 // import GeneView from "./components/GeneView.vue";
 import ImportView from "./components/ImportView.vue";
 import SingleView from './components/SingleView.vue';
-require("./assets/img/logo.png");
+require("./assets/img/logo2.png");
 
 export default {
   name: "App",
@@ -94,3 +100,9 @@ export default {
   },
 };
 </script>
+<style scoped>
+.menu {
+  align-items: center;
+    display: flex
+}
+</style>

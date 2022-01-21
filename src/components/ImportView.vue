@@ -1,5 +1,89 @@
 <template>
-  importt view
+<!-- <Display subtitle ico='magic'>Import Data</Display> -->
+  <div class="accordion accordion-flush" id="accordionFlushExample">
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="flush-headingOne">
+        <button
+          class="accordion-button"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#flush-collapseOne"
+          aria-expanded="false"
+          aria-controls="flush-collapseOne"
+        >
+         <Icon class="me-3 success" sm name='check2-circle'></Icon> Load Analise data
+        </button>
+      </h2>
+      <div
+        id="flush-collapseOne"
+        class="accordion-collapse collapse show"
+        aria-labelledby="flush-headingOne"
+        data-bs-parent="#accordionFlushExample"
+      >
+        <div class="accordion-body">
+          <ul>
+            <li>gff (baixar | api)</li>
+            <li>fasta genes (baixar | api)</li>
+            <li>tabela rmats/3dranse</li>
+            <li>adicionar dado q falta na tabela</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="flush-headingTwo">
+        <button
+          class="accordion-button collapsed"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#flush-collapseTwo"
+          aria-expanded="false"
+          aria-controls="flush-collapseTwo"
+        >
+          <Badge class="me-3">2</Badge>  <strong>Load transcriptomic data</strong>
+        </button>
+      </h2>
+      <div
+        id="flush-collapseTwo"
+        class="accordion-collapse collapse"
+        aria-labelledby="flush-headingTwo"
+        data-bs-parent="#accordionFlushExample"
+      >
+        <div class="accordion-body">
+          <ul>
+            <li>bed</li>
+            <li>anotacao interpro (baixar | api)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="flush-headingThree">
+        <button
+          class="accordion-button collapsed"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#flush-collapseThree"
+          aria-expanded="false"
+          aria-controls="flush-collapseThree"
+        >
+         <Badge class="me-3">3</Badge>   Load extra data
+        </button>
+      </h2>
+      <div
+        id="flush-collapseThree"
+        class="accordion-collapse collapse"
+        aria-labelledby="flush-headingThree"
+        data-bs-parent="#accordionFlushExample"
+      >
+        <div class="accordion-body">
+          <ul>
+            <li>tracks</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- <a href="coverage.bed">download BED de exemplo</a> -->
 
