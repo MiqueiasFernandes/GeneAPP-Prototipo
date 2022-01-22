@@ -4,8 +4,7 @@ import Exon from "../locus/Exon";
 import CDS from "../locus/CDS";
 import Gene from "../locus/Gene";
 
-const efetch_host = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi";//http://192.168.64.3";//https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi";
-///const efetch_query = "/";//"?db=gene&rettype=gene_table&retmode=text&id=";
+const efetch_host = "http://192.168.64.3:8088/efetch"; //"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi";
 
 export default class NCBI {
 

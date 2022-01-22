@@ -38,6 +38,17 @@
   ></ProgressBar>
 
 
+  <div v-if="carregado">
+    <ol v-for="gene of genes" :key="gene.name">
+      <li>
+        <b>{{ gene.name }} {{ gene.status }}</b
+        ><br />
+        {{ gene.getParsed() }}
+      </li>
+    </ol>
+  </div>
+
+
         </div>
       </div>
     </div>
@@ -63,7 +74,7 @@
         <div class="accordion-body">
           <ul>
             <li>bed</li>
-            <li>anotacao interpro (baixar | api)</li>
+            <li>bed juncao</li>
           </ul>
 
 
@@ -103,6 +114,7 @@
         <div class="accordion-body">
           <ul>
             <li>tracks</li>
+            <li>anotacao interpro (baixar | api)</li>
           </ul>
         </div>
       </div>
@@ -114,20 +126,11 @@
 
 
 
-  <div v-if="carregado">
-    <ol v-for="gene of genes" :key="gene.name">
-      <li>
-        <b>{{ gene.name }} {{ gene.status }}</b
-        ><br />
-        {{ gene.getParsed() }}
-      </li>
-    </ol>
-  </div>
 </template>
 
 <script>
 import NCBI from "../core/api/NCBI";
-import Interpro from "../core/api/Interpro";
+// import Interpro from "../core/api/Interpro";
 import Fasta from "../core/locus/Fasta";
 
 export default {
@@ -172,12 +175,12 @@ export default {
             .then((seq) => {
               const fasta = new Fasta(seq.data);
               console.log(fasta);
-              const job = Interpro.api().post(
-                fasta.id,
-                fasta.seq,
-                "bio@mikeias.net"
-              );
-              job.cbk = (x) => console.log(x);
+              // const job = Interpro.api().post(
+              //   fasta.id,
+              //   fasta.seq,
+              //   "bio@mikeias.net"
+              // );
+              // job.cbk = (x) => console.log(x);
             })
         );
       });
