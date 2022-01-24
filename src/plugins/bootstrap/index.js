@@ -15,6 +15,7 @@ import Pagination from './Pagination.component.vue'
 import ProgressBar from './ProgressBar.component.vue'
 import File from './File.component.vue'
 import Tabs from './Tabs.component.vue'
+import Table from './Table.component.vue'
 
 // install: npm i bootstrap@next bootstrap-icons
 // usage:   main.js => `.use(boostrap)`
@@ -162,11 +163,14 @@ export default {
         //Toast
         app.component("Toast", Toast)
         app.config.globalProperties.$toast_handler = (tc) => this.toast_component = tc;
-        app.config.globalProperties.$toast = (text, title, color, ico, delay) => {
+        app.config.globalProperties.$toast = (text, title, color, ico, delay, oc) => {
             if (this.toast_component) {
-                this.toast_component.notify(text, title, color, ico, delay);
+                this.toast_component.notify(text, title, color, ico, delay, oc);
             }
         };
+
+        //Table
+        app.component("Table", Table)
 
     }
 }

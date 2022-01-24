@@ -8,8 +8,8 @@ export default class Locus {
         tipo = 'Locus',
         sequencia, nota) {
         this.nome = nome;
-        this.inicio = inicio;
-        this.fim = fim;
+        this.inicio = inicio < fim ? inicio : fim;
+        this.fim = fim > inicio ? fim : inicio;
         this.size = 1 + fim - inicio;
         this.fita = fita;
         this.tipo = tipo;
@@ -47,6 +47,15 @@ export default class Locus {
     set_draw_strategy(draw_strategy) {
         this.draw_strategy = draw_strategy;
         return this;
+    }
+
+    relativo(locus) {
+            const ini = this.inicio - locus.inicio
+        if (locus.fita) {
+            return [ini, ini + this.size]
+        }
+        const ini2 = locus.size -1 - ini;
+        return [ini2, ini2+this.size]
     }
 
 }

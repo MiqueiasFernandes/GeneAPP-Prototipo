@@ -1,15 +1,7 @@
 <template>
   <div class="form-file" :class="{ 'form-file-lg': lg }">
-    <input
-      type="file"
-      class="form-file-input"
-      id="fileInput"
-      :disabled="disabled"
-      :multiple="max > 1"
-      ref="file"
-      v-on:change="setFile"
-    />
-    <label class="form-file-label" for="fileInput">
+    <label class="form-file-label" for="fileInput"
+      v-if="opts">
       <span class="form-file-text">
         <Badge v-if="files && files.length > 1" secondary round>
           {{ files.length }}
@@ -20,7 +12,17 @@
         <Icon :name="ico ? ico : img ? 'camera' : 'paperclip'" sm />
       </span>
     </label>
+    <input
+      type="file"
+      class="form-control"
+      id="fileInput"
+      :disabled="disabled"
+      :multiple="max > 1"
+      ref="file"
+      v-on:change="setFile"
+    />
     <Button
+      v-if="opts"
       type="button"
       sm
       color="none"
@@ -37,7 +39,7 @@
       class="mt-1"
       @click="remove"
       ico="x"
-      v-if="clear"
+      v-if="opts && clear"
       >clear</Button
     >
   </div>
@@ -46,6 +48,10 @@
 export default {
   emits: ["files", "parsed", "load"],
   props: {
+    opts: {
+      type: Boolean,
+      default: true,
+    },
     disabled: Boolean,
     lg: Boolean,
     img: Boolean,

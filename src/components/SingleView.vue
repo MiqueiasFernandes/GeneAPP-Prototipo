@@ -38,11 +38,9 @@ export default {
   },
   mounted() {},
   methods: {
-    set_data(genes, files) {
-      console.log(genes);
-      console.log(files);
-      genes.forEach((g) => this.$data.genes.push(g));
-      files.forEach((f) => this.$data.files.push(f));
+    set_data(dx) {
+      this.genes = dx.genes;
+      this.files = dx.files;
       this.gene = this.genes[0];
       this.plotarGene();
     },

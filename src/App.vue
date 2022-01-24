@@ -3,7 +3,8 @@
     <header
       class="
         d-flex
-        nav mainnav
+        nav
+        mainnav
         flex-wrap
         justify-content-center
         py-3
@@ -44,11 +45,14 @@
           >
         </li>
         <li class="nav-item mx-2">
-          <a href="#"    :class="{
+          <a
+            href="#"
+            :class="{
               'nav-link': true,
               active: state == 2,
               disabled: !pronto,
-            }" @click="bulk()"
+            }"
+            @click="bulk()"
             ><Icon sm class="me-2" name="minecart-loaded"></Icon> Bulk View</a
           >
         </li>
@@ -66,11 +70,13 @@
           >
         </li>
         <li class="nav-item mx-2">
-          <a href="#"   :class="{
+          <a
+            href="#"
+            :class="{
               'nav-link': true,
               active: state == 4,
               disabled: !pronto,
-            }" 
+            }"
             ><Icon sm class="me-2" name="cloud-arrow-down"></Icon>Export
             Results</a
           >
@@ -102,7 +108,10 @@
               >
             </li>
             <li>
-              <a class="dropdown-item" href="#"
+              <a
+                class="dropdown-item"
+                href="#"
+                @click="(settings = !settings) && (outro = true)"
                 ><Icon sm class="me-2" name="gear"></Icon>Settings</a
               >
             </li>
@@ -114,11 +123,16 @@
   <div class="container content">
     <div class="card shadow-sm">
       <div class="card-body">
-        <ImportView @pronto="step1ok($event)" v-if="state == 1"></ImportView>
-        <BulkView v-if="state == 2"></BulkView>
-        <SingleView v-if="state == 3" ref="single"></SingleView>
+        <ImportView
+          @pronto="step1ok($event)"
+          v-if="state == 1 && !outro"
+        ></ImportView>
+        <BulkView ref="bulk" v-if="state == 2 && !outro"></BulkView>
+        <SingleView v-if="state == 3 && !outro" ref="single"></SingleView>
         <!-- download data -->
         <!-- sobre -->
+
+        <SettingsView v-if="settings"></SettingsView>
       </div>
     </div>
   </div>
@@ -131,6 +145,7 @@
 import ImportView from "./components/ImportView.vue";
 import BulkView from "./components/BulkView.vue";
 import SingleView from "./components/SingleView.vue";
+import SettingsView from "./components/SettingsView.vue";
 require("./assets/img/logo2.png");
 
 export default {
@@ -140,23 +155,7 @@ export default {
     ImportView,
     BulkView,
     SingleView,
-  },
-
-  mounted() {
-    this.$toast(
-      "This site use cookies",
-      "Alert!",
-      "secondary",
-      "cone-striped",
-      999999
-    );
-    this.$toast(
-      "Configure your user mail to use external APIs.",
-      "Welcome!",
-      "secondary",
-      "flag-fill",
-      999999
-    );
+    SettingsView,
   },
 
   data() {
@@ -165,22 +164,65 @@ export default {
       carregado: false,
       state: 1,
       pronto: false,
+      outro: false,
+      settings: false,
+
+      dx: null
     };
+  },
+
+  mounted() {
+    const has_storage = this.storage.storageAvailable();
+
+    if (!has_storage || this.storage.get("cookies", "no") !== "ok") {
+      this.$toast(
+        "This site use cookies",
+        "Alert!",
+        "secondary",
+        "cone-striped",
+        999999,
+        () => has_storage && this.storage.set("cookies", "ok")
+      );
+    }
+
+    if (!has_storage) {
+      this.$toast(
+        "Seu browser é incompativel com armazenamento local de dados.",
+        "ERRO",
+        "danger",
+        "exclamation-triangle",
+        30
+      );
+    } else {
+      if (!this.storage.get("email")) {
+        this.$toast(
+          "Configure your user mail to use external APIs.",
+          "Welcome!",
+          "secondary",
+          "flag-fill",
+          30
+        );
+      }
+    }
   },
 
   methods: {
     step1ok(data) {
       this.pronto = true;
-      this.genes = data[0];
-      this.files = data[1];
+      // this.genes = data[0];
+      // this.files = data[1];
+      this.dx = data;
     },
     bulk() {
       this.state = 2;
+      setTimeout(() => {
+        this.$refs.bulk.set_data(this.dx);
+      }, 300);
     },
     ir_pagina() {
       this.state++;
       setTimeout(() => {
-        this.$refs.single.set_data(this.genes, this.files);
+        this.$refs.single.set_data(this.dx);
       }, 3000);
     },
   },
@@ -188,7 +230,7 @@ export default {
 </script>
 <style scoped>
 .mainnav {
-  background: rgb(240 255 255 / 98%);
+  background: rgb(238 245 245 / 98%);
 }
 .menu {
   align-items: center;

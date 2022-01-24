@@ -6,6 +6,7 @@ import App from './App.vue'
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
+import LocalStorage from './util/LocalStorage';
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -28,7 +29,8 @@ getAnalytics(firebase_app);
 
 
 
-const app = createApp(App).use(bootstrap)
+const app = createApp(App).use(bootstrap);
+app.config.globalProperties.storage = LocalStorage.instance();
 
 app.config.globalProperties.$bootstrap_icons.then(() => {
     app.mount('#app')

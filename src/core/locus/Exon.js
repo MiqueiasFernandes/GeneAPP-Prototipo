@@ -14,4 +14,9 @@ export default class Exon extends Locus {
     ) {
         super(nome, inicio, fim, fita, 'Exon', sequencia);
     }
+
+    extrair(gene, seq) {
+        const c = this.relativo(gene)
+        this.sequence = seq.substr(c[0], c[1]-c[0])
+    }
 }

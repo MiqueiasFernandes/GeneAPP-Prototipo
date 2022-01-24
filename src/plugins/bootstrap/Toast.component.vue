@@ -56,13 +56,14 @@ export default {
           const index = this.toasts.findIndex((t) => t.id === el.target.id);
           const toast_ = this.toasts[index];
           toast_.instance.hide();
+          if (toast_.onClose) toast_.onClose(toast_);
           this.toasts.splice(index, 1);
         });
       }
     });
   },
   methods: {
-    notify(text, title, color = "secondary", ico, delay = 5) {
+    notify(text, title, color = "secondary", ico, delay = 5, onClose) {
       this.toasts.push({
         text,
         title,
@@ -70,6 +71,7 @@ export default {
         delay,
         ico,
         id: `toast-${this.index++}`,
+        onClose,
       });
     },
   },
@@ -95,7 +97,7 @@ export default {
 .config {
   min-width: 500px;
   justify-content: space-between;
-  padding: .5rem 1rem;
+  padding: 0.5rem 1rem;
 }
 
 .content {
