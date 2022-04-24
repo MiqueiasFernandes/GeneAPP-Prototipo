@@ -10,7 +10,7 @@ for prog in sra-toolkit trimmomatic fastqc salmon
         echo "[1.$p] instalando o $prog ..."
         apt install $prog 1> _1.$p\_install.$prog.log 2> _1.$p\_install.$prog.err
         
-        if $prog -eq "sra-toolkit"
+        if [[ $prog == "sra-toolkit" ]]
         then ln $(which fastq-dump) /usr/bin/sra-toolkit
         fi
         
