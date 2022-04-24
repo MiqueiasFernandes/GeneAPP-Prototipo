@@ -16,7 +16,6 @@ for prog in sra-toolkit trimmomatic fastqc salmon
         
         (( p=p+1 ))
     fi
-    ln $(which fastq-dump) /usr/bin/sra-toolkit
     if command -v $prog &> /dev/null
     then
         echo usando [$prog] => $( $prog --version ) >> _1.0_pacotes.log
