@@ -11,14 +11,18 @@ for prog in sra-toolkit trimmomatic fastqc salmon
         apt install $prog 1> _1.$p\_install.$prog.log 2> _1.$p\_install.$prog.err
         
         if [[ $prog == "sra-toolkit" ]]
-        then ln $(which fastq-dump) /usr/bin/sra-toolkit
+            then ln $(which fastq-dump) /usr/bin/sra-toolkit
+        fi
+
+        if [[ $prog == "trimmomatic" ]]
+            then ln $(which TrimmomaticPE) /usr/bin/trimmomatic
         fi
         
         (( p=p+1 ))
     fi
     if command -v $prog &> /dev/null
     then
-        echo "usando [$prog] => $( $prog --version )" >> _1.0_pacotes.log
+        echo "usando o [$prog] ! $( $prog --version )" >> _1.0_pacotes.log
     else
         exit -1
     fi
