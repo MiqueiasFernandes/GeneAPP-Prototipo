@@ -42,12 +42,10 @@ echo '[3.1] baixando os transcritos ...'
 wget -O cds.$tid.fa.gz $2 1> _3.1_transcripts.download.log 2> _3.1_transcripts.download.err
 echo '[3.2] descompactando os transcritos ...'
 gunzip cds.$tid.fa.gz 1> _3.2_transcripts.unzip.log 2> _3.2_transcripts.unzip.err
-echo '[3.3] indexando os transcritos ...'
-salmon index -t cds.$tid.fa --index idx$tid 1> _3.3_transcripts.index.log 2> _3.3_transcripts.index.err
 
-echo '[3.4] filtrando os transcritos ...'
-cat > script.py << EOF 
-seqs = [(l.strip(), l[1:-1].split()) for l in open('cds.fa').readlines() if l.startswith('>')]
+echo '[3.3] filtrando os transcritos ...'
+echo "seqs = [(l.strip(), l[1:-1].split()) for l in open('cds.$tid.fa').readlines() if l.startswith('>')]" > script.py
+cat >> script.py << EOF 
 print(len(seqs), 'sequencias de CDS')
 pars = [[a, b[0], c] for a, b, c in [[x[0], [z for z in x if 'gene=' in z], y] for y, x in seqs] if len(b) == 1]
 conts = {g: [0, []] for g in set([x[1] for x in pars])}
@@ -72,9 +70,12 @@ for l in open('cds.fa').readlines():
     as_cds.append(l)
 open('cds_filtrada.fna', 'w').writelines(as_cds)
 EOF
-python3 script.py 1> _3.4_transcripts.filter.log 2> _3.4_transcripts.filter.err
-mv cds_filtrada.fna cds.fa
+python3 script.py 1> _3.3_transcripts.filter.log 2> _3.3_transcripts.filter.err
+mv cds_filtrada.fna cds.$tid.fa
 rm script.py
+
+echo '[3.4] indexando os transcritos ...'
+salmon index -t cds.$tid.fa --index idx$tid 1> _3.4_transcripts.index.log 2> _3.4_transcripts.index.err
 
 echo '[4] quantificando amostras ...'
 i=1
