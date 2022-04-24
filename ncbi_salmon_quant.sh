@@ -60,17 +60,17 @@ for x in $@
             echo "[4.$i.2] fazendo controle de qualidade da amostra $SAMPLE com o TrimmomaticPE ..."
             TrimmomaticPE \
                 $RUN\_1.fastq $RUN\_2.fastq \
-                $SAMPLE.1.fq $SAMPLE.1.unp.fq \
-                $SAMPLE.2.fq $SAMPLE.2.unp.fq \
+                $SAMPLE.F.fq $SAMPLE.1.unp.fq \
+                $SAMPLE.R.fq $SAMPLE.2.unp.fq \
                 ILLUMINACLIP:TruSeq3-PE.fa:2:30:10:2:True LEADING:3 TRAILING:3 MINLEN:36 \
                 1> _4.$i.2_qc.$SAMPLE.log 2> _4.$i.2_qc.$SAMPLE.err
             
             echo "[4.$i.3] reportando controle de qualidade da amostra $SAMPLE com fastqc ..."
             rm qc_$SAMPLE -rf && mkdir qc_$SAMPLE
-            fastqc $SAMPLE.1.fq $SAMPLE.2.fq -o qc_$SAMPLE 1> _4.$i.3_stats.$SAMPLE.log 2> _4.$i.3_stats.$SAMPLE.err
+            fastqc $SAMPLE.F.fq $SAMPLE.R.fq -o qc_$SAMPLE 1> _4.$i.3_stats.$SAMPLE.log 2> _4.$i.3_stats.$SAMPLE.err
             
             echo "[4.$i.4] quantificando com a amostra $SAMPLE com salmon ..."
-            salmon quant -1 $SAMPLE.1.fq -2 $SAMPLE.2.fq \
+            salmon quant -1 $SAMPLE.F.fq -2 $SAMPLE.R.fq \
             -o quant_$SAMPLE --libType IU --index idx$tid 1> _4.$i.4_quant.$SAMPLE.log 2> _4.$i.4_quant.$SAMPLE.err
 
             echo "[4.$i.5] limpando dados de $SAMPLE ..."
@@ -84,9 +84,9 @@ for x in $@
 done 
 
 echo '[5] executando o multiqc ...'
-multiqc out_*/qc_*
+multiqc out_*/qc_* 1> _5_multiqc.log 2> _5_multiqc.err
 
 echo '[6] compactando para RESULTS.zip ...'
-zip RESULTS.zip out_*/*  multiqc_* *.log *.err
+zip RESULTS.zip out_*/*  multiqc_* *.log *.err 1> _6_zip.log 2> _6_zip.err
 
 echo $(date +%D.%H-%M-%S) terminado.
