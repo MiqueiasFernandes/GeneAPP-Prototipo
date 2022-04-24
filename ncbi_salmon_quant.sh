@@ -1,13 +1,17 @@
 #!/bin/bash
 
-echo "[1] $(date) verificando pacotes."
+echo "[1] $(date +%D.%H-%M-%S) verificando pacotes..."
 
-if ! command -v salmon &> /dev/null
-then
-    echo "instalar pacotes!"
-    echo "!apt install sra-toolkit trimmomatic fastqc salmon 1> install.log 2> install.err"
-    exit
-fi
+p=1
+for prog in sra-toolkit trimmomatic fastqc salmon
+    do
+    if ! command -v $prog &> /dev/null
+    then
+        echo "[1.$p] instalando o $prog ..."
+        apt install $prog 1> install.$prog.log 2> install.$prog.err
+        (( p=p+1 ))
+    fi
+done
 
 echo '[2] importando a anotação ...'
 tid=t$(date +%s)
@@ -64,4 +68,4 @@ done
 echo '[5] compactando para RESULTS.zip ...'
 zip RESULTS.zip out_*/* *.log *.err
 
-echo $(date) terminado.
+echo $(date +%D.%H-%M-%S) terminado.
