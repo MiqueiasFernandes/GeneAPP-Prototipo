@@ -44,8 +44,9 @@ echo '[3.2] descompactando os transcritos ...'
 gunzip cds.$tid.fa.gz 1> _3.2_transcripts.unzip.log 2> _3.2_transcripts.unzip.err
 
 echo '[3.3] filtrando os transcritos ...'
-echo "seqs = [(l.strip(), l[1:-1].split()) for l in open('cds.$tid.fa').readlines() if l.startswith('>')]" > script.py
+echo "cds = 'cds.$tid.fa'" > script.py
 cat >> script.py << EOF 
+seqs = [(l.strip(), l[1:-1].split()) for l in open(cds).readlines() if l.startswith('>')]
 print(len(seqs), 'sequencias de CDS')
 pars = [[a, b[0], c] for a, b, c in [[x[0], [z for z in x if 'gene=' in z], y] for y, x in seqs] if len(b) == 1]
 conts = {g: [0, []] for g in set([x[1] for x in pars])}
@@ -63,15 +64,14 @@ for k, v in conts.items():
 print(len(ok), 'CDS de genes com AS')
 k=False
 as_cds = []
-for l in open('cds.fa').readlines():
+for l in open(cds).readlines():
   if l.startswith('>'):
     k = l.strip() in ok
   if k:
     as_cds.append(l)
-open('cds_filtrada.fna', 'w').writelines(as_cds)
+open(cds, 'w').writelines(as_cds)
 EOF
 python3 script.py 1> _3.3_transcripts.filter.log 2> _3.3_transcripts.filter.err
-mv cds_filtrada.fna cds.$tid.fa
 rm script.py
 
 echo '[3.4] indexando os transcritos ...'
