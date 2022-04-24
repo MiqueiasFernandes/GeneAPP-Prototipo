@@ -45,15 +45,21 @@ for x in $@
         $> _4.2_qc.$SAMPLE.log
     
     echo "[4.$i.3] reportando controle de qualidade da amostra $SAMPLE com fastqc ..."
-    rm stats$SAMPLE -rf && mkdir stats$SAMPLE
-    fastqc $SAMPLE.1.fq $SAMPLE.2.fq -o stats$SAMPLE $> _4.3_stats.$SAMPLE.log
+    rm qc_$SAMPLE -rf && mkdir qc_$SAMPLE
+    fastqc $SAMPLE.1.fq $SAMPLE.2.fq -o qc_$SAMPLE $> _4.3_stats.$SAMPLE.log
     
     echo "[4.$i.4] quantificando a amostra $SAMPLE com salmon ..."
     salmon quant -1 $SAMPLE.1.fq -2 $SAMPLE.2.fq \
-    -o quant_out_$SAMPLE\_quant --libType IU --index idx$tid $> _4.4_quant.$SAMPLE.log
+    -o quant_$SAMPLE --libType IU --index idx$tid $> _4.4_quant.$SAMPLE.log
+
+    echo "[4.$i.4] limpando dados de $SAMPLE ..."
+    mkdir out_$SAMPLE
+    mv qc_$SAMPLE out_$SAMPLE -r
+    mv quant_$SAMPLE out_$SAMPLE -r
+    rm *.fastq *.fq
 done 
 
 echo '[5] compactando para RESULTS.zip ...'
-zip RESULTS.zip quant_out*/* *.log
+zip RESULTS.zip out_*/* *.log
 
 echo $(date) terminado.
