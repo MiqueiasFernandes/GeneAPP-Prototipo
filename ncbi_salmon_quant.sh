@@ -42,7 +42,7 @@ for x in $@
             
             echo "[4.$i.2] fazendo controle de qualidade da amostra $SAMPLE com o TrimmomaticPE ..."
             TrimmomaticPE \
-                $RUN_1.fastq $RUN_2.fastq \
+                $RUN\_1.fastq $RUN\_2.fastq \
                 $SAMPLE.1.fq $SAMPLE.1.unp.fq \
                 $SAMPLE.2.fq $SAMPLE.2.unp.fq \
                 ILLUMINACLIP:TruSeq3-PE.fa:2:30:10:2:True LEADING:3 TRAILING:3 MINLEN:36 \
@@ -60,7 +60,7 @@ for x in $@
             mkdir out_$SAMPLE
             mv qc_$SAMPLE out_$SAMPLE
             mv quant_$SAMPLE out_$SAMPLE
-            rm *.fastq *.fq
+            rm *.fastq *.fq -f
             (( i=i+1 ))       
         fi
 done 
