@@ -18,7 +18,7 @@ for prog in sra-toolkit trimmomatic fastqc salmon
     fi
     if command -v $prog &> /dev/null
     then
-        echo usando [$prog] => $( $prog --version ) >> _1.0_pacotes.log
+        echo "usando [$prog] => $( $prog --version )" >> _1.0_pacotes.log
     else
         exit -1
     fi
