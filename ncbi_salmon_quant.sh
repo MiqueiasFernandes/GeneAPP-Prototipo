@@ -5,7 +5,7 @@ echo "[1] $(date +%D.%H-%M-%S) prepando o ambiente..."
 p=1
 for prog in sra-toolkit trimmomatic fastqc salmon
     do
-    if ! command -v $prog &> /dev/null
+    if ! command -v $prog 1> /dev/null 2> /dev/null
     then
         echo "[1.$p] instalando o $prog ..."
         apt install $prog 1> _1.$p\_install.$prog.log 2> _1.$p\_install.$prog.err
@@ -20,7 +20,7 @@ echo "usando o fastqc ! Versão: $( fastqc --version )" >> _1.0_pacotes.log
 
 for pkg in multiqc
     do
-    if ! command --version $pkg &> /dev/null
+    if ! command --version $pkg 1> /dev/null 2> /dev/null
     then
         echo "[1.$p] instalando o $pkg ..."
         pip install $pkg 1> _1.$p\_install.$pkg.log 2> _1.$p\_install.$pkg.err
