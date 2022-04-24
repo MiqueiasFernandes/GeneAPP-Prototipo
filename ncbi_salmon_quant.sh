@@ -37,7 +37,7 @@ for x in $@
             fastq-dump --split-3 $RUN 1> _4.1_download.$RUN.$SAMPLE.log 2> _4.1_download.$RUN.$SAMPLE.err
             
             echo "[4.$i.2] fazendo controle de qualidade da amostra $SAMPLE com o TrimmomaticPE ..."
-            !TrimmomaticPE \
+            TrimmomaticPE \
                 $RUN_1.fastq $RUN_2.fastq \
                 $SAMPLE.1.fq $SAMPLE.1.unp.fq \
                 $SAMPLE.2.fq $SAMPLE.2.unp.fq \
@@ -54,8 +54,8 @@ for x in $@
 
             echo "[4.$i.4] limpando dados de $SAMPLE ..."
             mkdir out_$SAMPLE
-            mv qc_$SAMPLE out_$SAMPLE -r
-            mv quant_$SAMPLE out_$SAMPLE -r
+            mv qc_$SAMPLE out_$SAMPLE
+            mv quant_$SAMPLE out_$SAMPLE
             rm *.fastq *.fq
             (( i=i+1 ))       
         fi
