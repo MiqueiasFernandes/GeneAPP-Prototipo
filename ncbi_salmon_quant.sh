@@ -9,13 +9,14 @@ then
     exit
 fi
 
+echo '[2] importando a anotação ...'
 tid=t$(date +%s)
-
 echo '[2.1] baixando o GTF ...'
 wget -O gene.$tid.gtf.gz $1 1> _2.1_transcripts.download.log 2> _2.1_transcripts.download.err
 echo '[2.2] descompactando o GTF ...'
 gunzip gene.$tid.gtf.gz 1> _2.2_transcripts.download.log 2> _2.2_transcripts.download.err
 
+echo '[3] importando transcritos ...'
 echo '[3.1] baixando os transcritos ...'
 wget -O cds.$tid.fa.gz $2 1> _3.1_transcripts.download.log 2> _3.1_transcripts.download.err
 echo '[3.2] descompactando os transcritos ...'
@@ -23,14 +24,14 @@ gunzip cds.$tid.fa.gz 1> _2.2_transcripts.unzip.log 2> _2.2_transcripts.unzip.er
 echo '[3.3] indexando os transcritos ...'
 salmon index -t cds.$tid.fa --index idx$tid 1> _2.3_transcripts.index.log 2> _2.3_transcripts.index.err
 
+echo '[4] quantificando amostras ...'
+i=1
 for x in $@
     do 
         if [[ `echo $x | grep ,` ]]
         then
             RUN=`echo $x | cut -d, -f1`
             SAMPLE=`echo $x | cut -d, -f2`
-            echo "$RUN: $SAMPLE" >> processed
-            i=$( wc -l processed | tr -cs 0-9 , | cut -d, -f2 )
 
             echo "[4.$i.1] obtendo a amostra $SAMPLE pelo acesso $RUN no sra ..."
             fastq-dump --split-3 $RUN 1> _4.1_download.$RUN.$SAMPLE.log 2> _4.1_download.$RUN.$SAMPLE.err
@@ -55,7 +56,8 @@ for x in $@
             mkdir out_$SAMPLE
             mv qc_$SAMPLE out_$SAMPLE -r
             mv quant_$SAMPLE out_$SAMPLE -r
-            rm *.fastq *.fq       
+            rm *.fastq *.fq
+            (( i=i+1 ))       
         fi
 done 
 
