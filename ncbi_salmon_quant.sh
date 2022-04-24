@@ -45,6 +45,37 @@ gunzip cds.$tid.fa.gz 1> _3.2_transcripts.unzip.log 2> _3.2_transcripts.unzip.er
 echo '[3.3] indexando os transcritos ...'
 salmon index -t cds.$tid.fa --index idx$tid 1> _3.3_transcripts.index.log 2> _3.3_transcripts.index.err
 
+echo '[3.4] filtrando os transcritos ...'
+cat > script.py << EOF 
+seqs = [(l.strip(), l[1:-1].split()) for l in open('cds.fa').readlines() if l.startswith('>')]
+print(len(seqs), 'sequencias de CDS')
+pars = [[a, b[0], c] for a, b, c in [[x[0], [z for z in x if 'gene=' in z], y] for y, x in seqs] if len(b) == 1]
+conts = {g: [0, []] for g in set([x[1] for x in pars])}
+print(len(conts), 'genes')
+for a, b, c in pars:
+  conts[b][0]+=1
+  conts[b][1].append(c)
+print(len(set([k for k, v in conts.items() if v[0] < 2])), 'genes sem AS')
+print(len(set([k for k, v in conts.items() if v[0] > 1])), 'genes com AS')
+ok = []
+for k, v in conts.items():
+  if v[0] > 1:
+    for seq in v[1]:
+      ok.append(seq)
+print(len(ok), 'CDS de genes com AS')
+k=False
+as_cds = []
+for l in open('cds.fa').readlines():
+  if l.startswith('>'):
+    k = l.strip() in ok
+  if k:
+    as_cds.append(l)
+open('cds_filtrada.fna', 'w').writelines(as_cds)
+EOF
+python3 script.py 1> _3.4_transcripts.filter.log 2> _3.4_transcripts.filter.err
+mv cds_filtrada.fna cds.fa
+rm script.py
+
 echo '[4] quantificando amostras ...'
 i=1
 for x in $@
@@ -57,7 +88,7 @@ for x in $@
             echo "[4.$i.1] obtendo a amostra $SAMPLE pelo acesso $RUN no sra ..."
             fastq-dump --split-3 $RUN 1> _4.$i.1_download.$RUN.$SAMPLE.log 2> _4.$i.1_download.$RUN.$SAMPLE.err
             
-            echo "[4.$i.2] fazendo controle de qualidade da amostra $SAMPLE com o TrimmomaticPE ..."
+            echo "[4.$i.2] fazendo controle de qualidade da amostra $SAMPLE com o trimmomatic ..."
             TrimmomaticPE \
                 $RUN\_1.fastq $RUN\_2.fastq \
                 $SAMPLE.F.fq $SAMPLE.1.unp.fq \
