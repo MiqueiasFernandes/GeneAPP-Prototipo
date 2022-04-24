@@ -8,12 +8,13 @@ for prog in sra-toolkit trimmomatic fastqc salmon
     if ! command -v $prog &> /dev/null
     then
         echo "[1.$p] instalando o $prog ..."
-        apt install $prog 1> _1.$p_install.$prog.log 2> _1.$p_install.$prog.err
+        apt install $prog 1> _1.$p\_install.$prog.log 2> _1.$p\_install.$prog.err
         (( p=p+1 ))
     fi
+    alias sra-toolkit="fastq-dump"
     if command -v $prog &> /dev/null
     then
-        echo usando $prog versao $( command -v $prog ) >> _1.0_pacotes.log
+        echo usando [$prog] => $( $prog --version ) >> _1.0_pacotes.log
     else
         exit -1
     fi
@@ -24,12 +25,12 @@ for pkg in multiqc
     if ! command --version $pkg &> /dev/null
     then
         echo "[1.$p] instalando o $pkg ..."
-        pip install $pkg 1> _1.$p_install.$pkg.log 2> _1.$p_install.$pkg.err
+        pip install $pkg 1> _1.$p\_install.$pkg.log 2> _1.$p\_install.$pkg.err
         (( p=p+1 ))
     fi
     if command --version $pkg &> /dev/null
     then
-        echo usando $pkg versao $( command --version $pkg ) >> _1.0_pacotes.log
+        echo usando [$pkg] => $( $pkg --version ) >> _1.0_pacotes.log
     else
         exit -1
     fi
