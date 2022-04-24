@@ -13,10 +13,10 @@ for prog in sra-toolkit trimmomatic fastqc salmon
     fi
 done
 
-echo "usando o sra-toolkit ! $( fastq-dump --version )" >  _1.0_pacotes.log
-echo "usando o trimmomatic ! $( TrimmomaticPE -version )" >> _1.0_pacotes.log
-echo "usando o fastqc ! $( fastqc --version )" >> _1.0_pacotes.log
-echo "usando o salmon ! $( salmon --version )" >> _1.0_pacotes.log
+echo "usando o salmon ! Versão: $( salmon --version )" &> _1.0_pacotes.log
+echo "usando o sra-toolkit ! Versão: $( fastq-dump --version )" >>  _1.0_pacotes.log
+echo "usando o trimmomatic ! Versão: $( TrimmomaticPE -version )" >> _1.0_pacotes.log
+echo "usando o fastqc ! Versão: $( fastqc --version )" >> _1.0_pacotes.log
 
 for pkg in multiqc
     do
