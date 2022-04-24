@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "[1] $(date +%D.%H-%M-%S) verificando pacotes..."
+echo "[1] $(date +%D.%H-%M-%S) prepando o ambiente..."
 
 p=1
 for prog in sra-toolkit trimmomatic fastqc salmon
@@ -9,24 +9,14 @@ for prog in sra-toolkit trimmomatic fastqc salmon
     then
         echo "[1.$p] instalando o $prog ..."
         apt install $prog 1> _1.$p\_install.$prog.log 2> _1.$p\_install.$prog.err
-        
-        if [[ $prog == "sra-toolkit" ]]
-            then ln $(which fastq-dump) /usr/bin/sra-toolkit
-        fi
-
-        if [[ $prog == "trimmomatic" ]]
-            then ln $(which TrimmomaticPE) /usr/bin/trimmomatic
-        fi
-        
         (( p=p+1 ))
     fi
-    if command -v $prog &> /dev/null
-    then
-        echo "usando o [$prog] ! $( $prog --version )" >> _1.0_pacotes.log
-    else
-        exit -1
-    fi
 done
+
+echo "usando o sra-toolkit ! $( fastq-dump --version )" >  _1.0_pacotes.log
+echo "usando o trimmomatic ! $( TrimmomaticPE -version )" >> _1.0_pacotes.log
+echo "usando o fastqc ! $( fastqc --version )" >> _1.0_pacotes.log
+echo "usando o salmon ! $( salmon --version )" >> _1.0_pacotes.log
 
 for pkg in multiqc
     do
@@ -36,13 +26,9 @@ for pkg in multiqc
         pip install $pkg 1> _1.$p\_install.$pkg.log 2> _1.$p\_install.$pkg.err
         (( p=p+1 ))
     fi
-    if command --version $pkg &> /dev/null
-    then
-        echo usando [$pkg] => $( $pkg --version ) >> _1.0_pacotes.log
-    else
-        exit -1
-    fi
 done
+
+echo "usando o multiqc ! $( multiqc --version )" >> _1.0_pacotes.log
 
 echo '[2] importando a anotação ...'
 tid=t$(date +%s)
