@@ -3,7 +3,7 @@
 MIN_READ_LEN=80
 
 tid=t$(date +%s)
-mkdir results$tid && cd result$tid
+mkdir results$tid && cd results$tid
 echo "[1    ] $(date +%D.%H-%M-%S) prepando o ambiente results$tid/ ..."
 
 p=1
