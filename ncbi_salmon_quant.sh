@@ -197,7 +197,7 @@ for x in $@
             bamtools sort -in $SAMPLE.maped.bam -out $SAMPLE.sorted.bam  1> _4.$i.6_bam.$SAMPLE.log 2>> _4.$i.6_bam.$SAMPLE.err
 
             echo "[4.$i.7] gerando arquivo de cobertura para a amostra $SAMPLE com deeptools ..."
-            GENE=$(grep \> gene_seqs.fa | head 1000 | tail -1 | tr -d \> | cut -d\   -f1)
+            GENE=$(grep \> gene_seqs.fa | head -1000 | tail -1 | tr -d \> | cut -d\   -f1)
             bamCoverage -b $SAMPLE.sorted.bam -o $SAMPLE.bed --outFileFormat bedgraph --binSize 3 -p 2 -r $GENE 1> _4.$i.7_cov.$SAMPLE.log 2> _4.$i.7_cov.$SAMPLE.err
 
             echo "[4.$i.8] limpando dados de $SAMPLE ..."
