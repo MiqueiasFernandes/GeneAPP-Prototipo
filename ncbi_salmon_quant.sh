@@ -148,25 +148,50 @@ for x in $@
             echo "[4.$i.1] $(date +%D.%H-%M-%S) obtendo a amostra $SAMPLE pelo acesso $RUN no sra ..."
             fastq-dump --split-3 --minReadLen $MIN_READ_LEN $RUN 1> _4.$i.1_download.$RUN.$SAMPLE.log 2> _4.$i.1_download.$RUN.$SAMPLE.err
             
-            echo "[4.$i.2] fazendo controle de qualidade da amostra $SAMPLE com o trimmomatic ..."
-            TrimmomaticPE \
-                $RUN\_1.fastq $RUN\_2.fastq \
-                $SAMPLE.F.fq $SAMPLE.1.unp.fq \
-                $SAMPLE.R.fq $SAMPLE.2.unp.fq \
-                ILLUMINACLIP:TruSeq3-PE.fa:2:30:10:2:True LEADING:3 TRAILING:3 MINLEN:36 \
-                1> _4.$i.2_qc.$SAMPLE.log 2> _4.$i.2_qc.$SAMPLE.err
+            if [[ $(ls -lh | grep -c _[12].fastq) > 1 ]]
+                then
+                echo "[4.$i.2] fazendo controle de qualidade da amostra PE $SAMPLE com o trimmomatic ..."
+                TrimmomaticPE \
+                    $RUN\_1.fastq $RUN\_2.fastq \
+                    $SAMPLE.F.fq $SAMPLE.1.unp.fq \
+                    $SAMPLE.R.fq $SAMPLE.2.unp.fq \
+                    ILLUMINACLIP:TruSeq3-PE.fa:2:30:10:2:True LEADING:3 TRAILING:3 MINLEN:36 \
+                    1> _4.$i.2_qc.$SAMPLE.log 2> _4.$i.2_qc.$SAMPLE.err
+                else
+                echo "[4.$i.2] fazendo controle de qualidade da amostra SE $SAMPLE com o trimmomatic ..."
+                TrimmomaticSE \
+                    $RUN.fastq $SAMPLE.fq $SAMPLE.unp.fq \
+                    ILLUMINACLIP:TruSeq3-PE.fa:2:30:10:2:True LEADING:3 TRAILING:3 MINLEN:36 \
+                    1> _4.$i.2_qc.$SAMPLE.log 2> _4.$i.2_qc.$SAMPLE.err
+            fi
             
             echo "[4.$i.3] reportando controle de qualidade da amostra $SAMPLE com fastqc ..."
             rm qc_$SAMPLE -rf && mkdir qc_$SAMPLE
-            fastqc $SAMPLE.F.fq $SAMPLE.R.fq -o qc_$SAMPLE 1> _4.$i.3_stats.$SAMPLE.log 2> _4.$i.3_stats.$SAMPLE.err
-            
+            if [[ $(ls -lh | grep -c _[12].fastq) > 1 ]]
+                then
+                    fastqc $SAMPLE.F.fq $SAMPLE.R.fq -o qc_$SAMPLE 1> _4.$i.3_stats.$SAMPLE.log 2> _4.$i.3_stats.$SAMPLE.err
+                else
+                    fastqc $SAMPLE.fq -o qc_$SAMPLE 1> _4.$i.3_stats.$SAMPLE.log 2> _4.$i.3_stats.$SAMPLE.err
+            fi
+
             echo "[4.$i.4] quantificando com a amostra $SAMPLE com salmon ..."
-            salmon quant -1 $SAMPLE.F.fq -2 $SAMPLE.R.fq \
+            if [[ $(ls -lh | grep -c _[12].fastq) > 1 ]]
+                then
+                    salmon quant -1 $SAMPLE.F.fq -2 $SAMPLE.R.fq \
             -o quant_$SAMPLE --libType IU --index idx$tid 1> _4.$i.4_quant.$SAMPLE.log 2> _4.$i.4_quant.$SAMPLE.err
+                else
+                    salmon quant -r $SAMPLE.fq \
+            -o quant_$SAMPLE --libType IU --index idx$tid 1> _4.$i.4_quant.$SAMPLE.log 2> _4.$i.4_quant.$SAMPLE.err
+            fi
 
             echo "[4.$i.5] mapeando com a amostra $SAMPLE com hisat2 ..."
-            hisat2 -x idxgenes -1 $SAMPLE.F.fq -2 $SAMPLE.R.fq --no-unal -S $SAMPLE.maped.sam  1> _4.$i.5_map.$SAMPLE.log 2> _4.$i.5_map.$SAMPLE.err
-
+            if [[ $(ls -lh | grep -c _[12].fastq) > 1 ]]
+                then
+                    hisat2 -x idxgenes -1 $SAMPLE.F.fq -2 $SAMPLE.R.fq --no-unal -S $SAMPLE.maped.sam  1> _4.$i.5_map.$SAMPLE.log 2> _4.$i.5_map.$SAMPLE.err
+                else
+                    hisat2 -x idxgenes -U $SAMPLE.fq --no-unal -S $SAMPLE.maped.sam  1> _4.$i.5_map.$SAMPLE.log 2> _4.$i.5_map.$SAMPLE.err
+            fi
+            
             echo "[4.$i.6] transformando sam em bam ordenado do $SAMPLE com samtools ..."
             samtools view -S -b $SAMPLE.maped.sam > $SAMPLE.maped.bam  2> _4.$i.6_bam.$SAMPLE.err
             bamtools sort -in $SAMPLE.maped.bam -out $SAMPLE.sorted.bam  1> _4.$i.6_bam.$SAMPLE.log 2>> _4.$i.6_bam.$SAMPLE.err
