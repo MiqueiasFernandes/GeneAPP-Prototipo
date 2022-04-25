@@ -150,7 +150,7 @@ for x in $@
             
             if [[ $(ls -lh | grep -c _[12].fastq) > 1 ]]
                 then
-                echo "[4.$i.2] fazendo controle de qualidade da amostra PE $SAMPLE com o trimmomatic ..."
+                echo "[4.$i.2] fazendo controle de qualidade da amostra $SAMPLE com o TrimmomaticPE ..."
                 TrimmomaticPE \
                     $RUN\_1.fastq $RUN\_2.fastq \
                     $SAMPLE.F.fq $SAMPLE.1.unp.fq \
@@ -158,7 +158,7 @@ for x in $@
                     ILLUMINACLIP:TruSeq3-PE.fa:2:30:10:2:True LEADING:3 TRAILING:3 MINLEN:36 \
                     1> _4.$i.2_qc.$SAMPLE.log 2> _4.$i.2_qc.$SAMPLE.err
                 else
-                echo "[4.$i.2] fazendo controle de qualidade da amostra SE $SAMPLE com o trimmomatic ..."
+                echo "[4.$i.2] fazendo controle de qualidade da amostra $SAMPLE com o TrimmomaticSE ..."
                 TrimmomaticSE \
                     $RUN.fastq $SAMPLE.fq \
                     ILLUMINACLIP:TruSeq3-PE.fa:2:30:10:2:True LEADING:3 TRAILING:3 MINLEN:36 \
