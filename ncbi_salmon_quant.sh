@@ -181,9 +181,9 @@ for x in $@
             cp quant_$SAMPLE/quant.sf out_$SAMPLE/$SAMPLE.quant.sf
             mv qc_$SAMPLE out_$SAMPLE
             mv quant_$SAMPLE out_$SAMPLE
-            mv Aligned.sortedByCoord.out.bam out_$SAMPLE
+            mv Aligned.sortedByCoord.out.bam out_$SAMPLE/$SAMPLE.sortedByCoord.out.bam
             mv $SAMPLE.bw out_$SAMPLE
-            rm *.fastq *.fq -f
+            rm *.fastq *.fq *.bam* -f
             (( i=i+1 ))       
         fi
 done 
