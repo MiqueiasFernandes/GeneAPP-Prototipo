@@ -68,10 +68,12 @@ echo '[2.1  ] baixando o genoma ...'
 wget -O genoma.$tid.fa.gz $1 1> _2.1_genoma.download.log 2> _2.1_genoma.download.err
 echo '[2.2  ] descompactando o genoma ...'
 gunzip genoma.$tid.fa.gz 1> _2.2_genoma.unzip.log 2> _2.2_genoma.unzip.err
-echo '[2.3  ] baixando o GTF ...'
-wget -O gene.$tid.gtf.gz $2 1> _2.3_gtf.download.log 2> _2.3_gtf.download.err
-echo '[2.4  ] descompactando o GTF ...'
-gunzip gene.$tid.gtf.gz 1> _2.4_gtf.unzip.log 2> _2.4_gtf.unzip.err
+echo '[2.3  ] indexando o genoma ...'
+hisat2-build genoma.$tid.fa idxgenoma.$tid 1> _2.3_genoma.index.log 2> _2.3_genoma.index.err
+echo '[2.4  ] baixando o GTF ...'
+wget -O gene.$tid.gtf.gz $2 1> _2.4_gtf.download.log 2> _2.4_gtf.download.err
+echo '[2.5  ] descompactando o GTF ...'
+gunzip gene.$tid.gtf.gz 1> _2.5_gtf.unzip.log 2> _2.5_gtf.unzip.err
 
 echo "[3    ] $(date +%D.%H-%M-%S) importando transcritos ..."
 echo '[3.1  ] baixando os transcritos ...'
@@ -121,7 +123,7 @@ gns = [l.strip().split('\t') for l in open(gtf).readlines() if '\tgene\t' in l]
 cords = [[x[0], int(x[3]), int(x[4]), x[6] == '+', x[-1].split('"')[1]] for x in gns]
 print(len(cords), 'genes no GTF')
 cords = [x for x in cords if x[-1] in gen_acecc]
-print(len(cords), 'genes filtrados')
+print(len(cords), 'genes a exportar')
 seqs = SeqIO.to_dict(SeqIO.parse(genoma, 'fasta'))
 gseqsF = [SeqRecord.SeqRecord(seqs[s[0]].seq[s[1]-1:s[2]], id=s[-1], description='') for s in cords if s[3]]
 gseqsR = [SeqRecord.SeqRecord(seqs[s[0]].seq[s[1]:s[2]+1].reverse_complement(), id=s[-1], description='') for s in cords if not s[3]]
@@ -173,34 +175,44 @@ for x in $@
                 else
                     fastqc $SAMPLE.fq -o qc_$SAMPLE 1> _4.$i.3_stats.$SAMPLE.log 2> _4.$i.3_stats.$SAMPLE.err
             fi
+            
+            echo "[4.$i.4] mapeando $SAMPLE  no genoma com hisat2..."
+            rm qc_$SAMPLE -rf && mkdir qc_$SAMPLE
+            if [[ $(ls -lh | grep -c _[12].fastq) > 1 ]]
+                then
+                    hisat2 -x idxgenoma.$tid -1 $SAMPLE.F.fq -2 $SAMPLE.R.fq --no-unal -S $SAMPLE.maped.sam 1> _4.$i.4_genomap.$SAMPLE.log 2> _4.$i.4_genomap.$SAMPLE.err
+                else
+                    hisat2 -x idxgenoma.$tid -U $SAMPLE.fq --no-unal -S $SAMPLE.maped.sam 1> _4.$i.4_genomap.$SAMPLE.log 2> _4.$i.4_genomap.$SAMPLE.err
+            fi
+            rm $SAMPLE.maped.sam
 
-            echo "[4.$i.4] quantificando com a amostra $SAMPLE com salmon ..."
+            echo "[4.$i.5] quantificando com a amostra $SAMPLE com salmon ..."
             if [[ $(ls -lh | grep -c _[12].fastq) > 1 ]]
                 then
                     salmon quant -1 $SAMPLE.F.fq -2 $SAMPLE.R.fq \
-            -o quant_$SAMPLE --libType IU --index idx$tid 1> _4.$i.4_quant.$SAMPLE.log 2> _4.$i.4_quant.$SAMPLE.err
+            -o quant_$SAMPLE --libType IU --index idx$tid 1> _4.$i.5_quant.$SAMPLE.log 2> _4.$i.5_quant.$SAMPLE.err
                 else
                     salmon quant -r $SAMPLE.fq \
-            -o quant_$SAMPLE --libType IU --index idx$tid 1> _4.$i.4_quant.$SAMPLE.log 2> _4.$i.4_quant.$SAMPLE.err
+            -o quant_$SAMPLE --libType IU --index idx$tid 1> _4.$i.5_quant.$SAMPLE.log 2> _4.$i.5_quant.$SAMPLE.err
             fi
 
-            echo "[4.$i.5] mapeando com a amostra $SAMPLE com hisat2 ..."
+            echo "[4.$i.6] mapeando com a amostra $SAMPLE com hisat2 ..."
             if [[ $(ls -lh | grep -c _[12].fastq) > 1 ]]
                 then
-                    hisat2 -x idxgenes -1 $SAMPLE.F.fq -2 $SAMPLE.R.fq --no-unal -S $SAMPLE.maped.sam  1> _4.$i.5_map.$SAMPLE.log 2> _4.$i.5_map.$SAMPLE.err
+                    hisat2 -x idxgenes -1 $SAMPLE.F.fq -2 $SAMPLE.R.fq --no-unal -S $SAMPLE.maped.sam  1> _4.$i.6_map.$SAMPLE.log 2> _4.$i.6_map.$SAMPLE.err
                 else
-                    hisat2 -x idxgenes -U $SAMPLE.fq --no-unal -S $SAMPLE.maped.sam  1> _4.$i.5_map.$SAMPLE.log 2> _4.$i.5_map.$SAMPLE.err
+                    hisat2 -x idxgenes -U $SAMPLE.fq --no-unal -S $SAMPLE.maped.sam  1> _4.$i.6_map.$SAMPLE.log 2> _4.$i.6_map.$SAMPLE.err
             fi
             
-            echo "[4.$i.6] transformando sam em bam ordenado do $SAMPLE com samtools ..."
-            samtools view -S -b $SAMPLE.maped.sam > $SAMPLE.maped.bam  2> _4.$i.6_bam.$SAMPLE.err
-            bamtools sort -in $SAMPLE.maped.bam -out $SAMPLE.sorted.bam  1> _4.$i.6_bam.$SAMPLE.log 2>> _4.$i.6_bam.$SAMPLE.err
+            echo "[4.$i.7] transformando sam em bam ordenado do $SAMPLE com samtools ..."
+            samtools view -S -b $SAMPLE.maped.sam > $SAMPLE.maped.bam  2> _4.$i.7_bam.$SAMPLE.err
+            bamtools sort -in $SAMPLE.maped.bam -out $SAMPLE.sorted.bam  1> _4.$i.7_bam.$SAMPLE.log 2>> _4.$i.7_bam.$SAMPLE.err
 
-            echo "[4.$i.7] gerando arquivo de cobertura para a amostra $SAMPLE com deeptools ..."
+            echo "[4.$i.8] gerando arquivo de cobertura para a amostra $SAMPLE com deeptools ..."
             GENE=$(grep \> gene_seqs.fa | head -1000 | tail -1 | tr -d \> | cut -d\   -f1)
-            bamCoverage -b $SAMPLE.sorted.bam -o $SAMPLE.bed --outFileFormat bedgraph --binSize 3 -p 2 -r $GENE 1> _4.$i.7_cov.$SAMPLE.log 2> _4.$i.7_cov.$SAMPLE.err
+            bamCoverage -b $SAMPLE.sorted.bam -o $SAMPLE.bed --outFileFormat bedgraph --binSize 3 -p 2 -r $GENE 1> _4.$i.8_cov.$SAMPLE.log 2> _4.$i.8_cov.$SAMPLE.err
 
-            echo "[4.$i.8] limpando dados de $SAMPLE ..."
+            echo "[4.$i.9] limpando dados de $SAMPLE ..."
             mkdir out_$SAMPLE
             cp quant_$SAMPLE/quant.sf out_$SAMPLE/$SAMPLE.quant.sf
             mv qc_$SAMPLE out_$SAMPLE
