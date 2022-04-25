@@ -36,7 +36,7 @@ echo "usando o fastqc ! Versão: $( fastqc --version )" >> _1.0_pacotes.log
 
 for pkg in multiqc biopython deeptools
     do
-    if [[ `pip list | grep $pkg` ]]
+    if [[ ! `pip list | grep $pkg` ]]
         then 
         echo "[1.$p] instalando o $pkg ..."
         pip install $pkg 1> _1.$p\_install.$pkg.log 2> _1.$p\_install.$pkg.err
@@ -45,6 +45,8 @@ for pkg in multiqc biopython deeptools
     if [[ `pip list | grep $pkg` ]]
         then 
         echo "usando o $pkg ! $( pip list | grep $x )" >> _1.0_pacotes.log
+    else
+        echo ERRO: ao instalar pacote $pkg
     fi
 done
 
