@@ -160,7 +160,7 @@ for x in $@
                 else
                 echo "[4.$i.2] fazendo controle de qualidade da amostra SE $SAMPLE com o trimmomatic ..."
                 TrimmomaticSE \
-                    $RUN.fastq $SAMPLE.fq $SAMPLE.unp.fq \
+                    $RUN.fastq $SAMPLE.fq \
                     ILLUMINACLIP:TruSeq3-PE.fa:2:30:10:2:True LEADING:3 TRAILING:3 MINLEN:36 \
                     1> _4.$i.2_qc.$SAMPLE.log 2> _4.$i.2_qc.$SAMPLE.err
             fi
