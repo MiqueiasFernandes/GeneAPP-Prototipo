@@ -2,9 +2,9 @@
 
 MIN_READ_LEN=80
 
-echo "[1    ] $(date +%D.%H-%M-%S) prepando o ambiente..."
 tid=t$(date +%s)
-mkdir results$tid && cd results$tid
+mkdir results$tid && cd result$tid
+echo "[1    ] $(date +%D.%H-%M-%S) prepando o ambiente results$tid/ ..."
 
 p=1
 
@@ -197,7 +197,8 @@ for x in $@
             bamtools sort -in $SAMPLE.maped.bam -out $SAMPLE.sorted.bam  1> _4.$i.6_bam.$SAMPLE.log 2>> _4.$i.6_bam.$SAMPLE.err
 
             echo "[4.$i.7] gerando arquivo de cobertura para a amostra $SAMPLE com deeptools ..."
-            #bamCoverage -b $SAMPLE.sorted.bam -o $SAMPLE.bed --outFileFormat bedgraph --binSize 3 -p 2 1> _4.$i.7_cov.$SAMPLE.log 2> _4.$i.7_cov.$SAMPLE.err
+            GENE=$(grep \> gene_seqs.fa | head 1000 | tail -1 | tr -d \> | cut -d\   -f1)
+            bamCoverage -b $SAMPLE.sorted.bam -o $SAMPLE.bed --outFileFormat bedgraph --binSize 3 -p 2 -r $GENE 1> _4.$i.7_cov.$SAMPLE.log 2> _4.$i.7_cov.$SAMPLE.err
 
             echo "[4.$i.8] limpando dados de $SAMPLE ..."
             mkdir out_$SAMPLE
