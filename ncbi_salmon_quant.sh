@@ -12,10 +12,10 @@ p=1
 ## trimmomatic : http://www.usadellab.org/cms/?page=trimmomatic   http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/TrimmomaticManual_V0.32.pdf
 ## fastqc      : https://www.bioinformatics.babraham.ac.uk/projects/fastqc/
 ## salmon      : https://salmon.readthedocs.io/en/latest/salmon.html
-## bamtools    : https://www.htslib.org/doc/samtools.html
-## rna-star    : https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf
+## samtools    : https://www.htslib.org/doc/samtools.html
+## hisat2      : http://daehwankimlab.github.io/hisat2/manual/
 
-for prog in sra-toolkit trimmomatic fastqc salmon bamtools rna-star
+for prog in sra-toolkit trimmomatic fastqc salmon samtools bamtools hisat2
     do
     if ! command -v $prog 1> /dev/null 2> /dev/null
     then
@@ -26,7 +26,7 @@ for prog in sra-toolkit trimmomatic fastqc salmon bamtools rna-star
 done
 
 echo "usando o salmon ! Versão: " > _1.0_pacotes.log && salmon -v 2>> _1.0_pacotes.log
-echo "usando o star ! Versão: $( STAR --version )" >>  _1.0_pacotes.log
+echo "usando o hisat2 ! Versão: $( hisat2 --version )" >>  _1.0_pacotes.log
 echo "usando o bamtools ! Versão: $( bamtools --version )" >>  _1.0_pacotes.log
 echo "usando o sra-toolkit ! Versão: $( fastq-dump --version )" >>  _1.0_pacotes.log
 echo "usando o trimmomatic ! Versão: $( TrimmomaticPE -version )" >> _1.0_pacotes.log
@@ -116,28 +116,22 @@ echo "genoma = 'genoma.$tid.fa'" >> script.py
 echo "gtf = 'gene.$tid.gtf'" >> script.py
 cat >> script.py << EOF
 from Bio import SeqIO, Seq, SeqRecord
-lns = [l.strip().split('\t') for l in open(gtf).readlines()]
-genes = [[x[0], x[6] == '+', int(x[3]), int(x[4]), x[-1].split('gene_id ')[1].split(';')[0].replace('"', '').strip()] 
- for x in lns if len(x) > 2 and x[2] == 'gene']
 gen_acecc = set([l.split('gene=')[1].split()[0].replace(']', '') for l in open(cds).readlines() if l.startswith('>')])
-gns = [x for x in genes if x[-1] in gen_acecc]
-print(len(gen_acecc) - len(gns), 'genes nao encontrados na busca por ID')
-seqs = SeqIO.to_dict(SeqIO.parse(genoma, "fasta"))
-gene_seqs = []
-for seq, strand, ini, end, name in gns:
-  s = Seq.Seq(str(seqs[seq].seq[ini-1:end]))
-  if not strand:
-    s = s.reverse_complement()
-  s = SeqRecord.SeqRecord(s, id=name, description="")
-  gene_seqs.append(s)
-SeqIO.write(gene_seqs, 'gene_seqs.fa', 'fasta')
+gns = [l.strip().split('\t') for l in open(gtf).readlines() if '\tgene\t' in l]
+cords = [[x[0], int(x[3]), int(x[4]), x[6] == '+', x[-1].split('"')[1]] for x in gns]
+print(len(cords), 'genes no GTF')
+cords = [x for x in cords if x[-1] in gen_acecc]
+print(len(cords), 'genes filtrados')
+seqs = SeqIO.to_dict(SeqIO.parse(genoma, 'fasta'))
+gseqsF = [SeqRecord.SeqRecord(seqs[s[0]].seq[s[1]-1:s[2]], id=s[-1], description='') for s in cords if s[3]]
+gseqsR = [SeqRecord.SeqRecord(seqs[s[0]].seq[s[1]:s[2]+1].reverse_complement(), id=s[-1], description='') for s in cords if not s[3]]
+SeqIO.write(gseqsF+gseqsR, 'gene_seqs.fa', 'fasta')
 print('finalizado.')
 EOF
 python3 script.py 1> _3.4_genes.extract.log 2> _3.4_genes.extract.err
 rm script.py
-mkdir idxgenes
 echo '[3.5  ] indexando sequencia de genes ...'
-STAR --runMode genomeGenerate --genomeDir idxgenes  --genomeFastaFiles gene_seqs.fa 1> _3.5_genes.index.log 2> _3.5_genes.index.err
+hisat2-build gene_seqs.fa idxgenes 1> _3.5_genes.index.log 2> _3.5_genes.index.err
 
 echo '[3.6  ] indexando os transcritos ...'
 salmon index -t cds.$tid.fa --index idx$tid 1> _3.6_transcripts.index.log 2> _3.6_transcripts.index.err
@@ -170,23 +164,23 @@ for x in $@
             salmon quant -1 $SAMPLE.F.fq -2 $SAMPLE.R.fq \
             -o quant_$SAMPLE --libType IU --index idx$tid 1> _4.$i.4_quant.$SAMPLE.log 2> _4.$i.4_quant.$SAMPLE.err
 
-            echo "[4.$i.5] mapeando com a amostra $SAMPLE com star ..."
-            ## https://www.biostars.org/p/169716/
-            STAR --genomeDir idxgenes \
-            --readFilesIn $SAMPLE.F.fq $SAMPLE.R.fq \
-            --outFilterScoreMinOverLread 0 --outFilterMatchNminOverLread 0  --outFilterMatchNmin 50 \
-            --outSAMtype BAM SortedByCoordinate 1> _4.$i.5_map.$SAMPLE.log 2> _4.$i.5_map.$SAMPLE.err
+            echo "[4.$i.5] mapeando com a amostra $SAMPLE com hisat2 ..."
+            hisat2 -x idxgenes -1 $SAMPLE.F.fq -2 $SAMPLE.R.fq --no-unal -S $SAMPLE.maped.sam  1> _4.$i.5_map.$SAMPLE.log 2> _4.$i.5_map.$SAMPLE.err
 
-            echo "[4.$i.6] gerando arquivo de cobertura para a amostra $SAMPLE com deeptools ..."
-            bamCoverage --bam Aligned.sortedByCoord.out.bam -o $SAMPLE.bw --binSize 3 1> _4.$i.6_cov.$SAMPLE.log 2> _4.$i.6_cov.$SAMPLE.err
+            echo "[4.$i.6] transformando sam em bam ordenado do $SAMPLE com samtools ..."
+            samtools view -S -b $SAMPLE.maped.sam > $SAMPLE.maped.bam  2> _4.$i.6_bam.$SAMPLE.err
+            bamtools sort -in $SAMPLE.maped.bam -out $SAMPLE.sorted.bam  1> _4.$i.6_bam.$SAMPLE.log 2>> _4.$i.6_bam.$SAMPLE.err
 
-            echo "[4.$i.7] limpando dados de $SAMPLE ..."
+            echo "[4.$i.7] gerando arquivo de cobertura para a amostra $SAMPLE com deeptools ..."
+            #bamCoverage -b $SAMPLE.sorted.bam -o $SAMPLE.bed --outFileFormat bedgraph --binSize 3 -p 2 1> _4.$i.7_cov.$SAMPLE.log 2> _4.$i.7_cov.$SAMPLE.err
+
+            echo "[4.$i.8] limpando dados de $SAMPLE ..."
             mkdir out_$SAMPLE
             cp quant_$SAMPLE/quant.sf out_$SAMPLE/$SAMPLE.quant.sf
             mv qc_$SAMPLE out_$SAMPLE
             mv quant_$SAMPLE out_$SAMPLE
-            mv Aligned.sortedByCoord.out.bam out_$SAMPLE/$SAMPLE.sortedByCoord.out.bam
-            mv $SAMPLE.bw out_$SAMPLE
+            mv $SAMPLE.bed out_$SAMPLE
+            mv $SAMPLE.sorted.bam out_$SAMPLE
             rm *.fastq *.fq *.bam* -f
             (( i=i+1 ))       
         fi
