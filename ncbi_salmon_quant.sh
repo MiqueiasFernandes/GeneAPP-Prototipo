@@ -1,10 +1,10 @@
 #!/bin/bash
 
 MIN_READ_LEN=80
-
+TZ=America/Sao_Paulo
 tid=t$(date +%s)
 mkdir results$tid && cd results$tid
-echo "[1    ] $(date +%D.%H-%M-%S) prepando o ambiente results$tid/ ..."
+echo "[1    ] $( date +%D.%H:%M:%S) prepando o ambiente results$tid/ ..."
 
 p=1
 
@@ -63,7 +63,7 @@ if ! grep 'pysam.index(bamFile)' /usr/local/lib/python3.7/dist-packages/deeptool
     rm xtemp bamHandler.py
 fi
 
-echo "[2    ] $(date +%D.%H-%M-%S) importando genoma e a anotação ..."
+echo "[2    ] $( date +%D.%H:%M:%S) importando genoma e a anotação ..."
 echo '[2.1  ] baixando o genoma ...'
 wget -O genoma.$tid.fa.gz $1 1> _2.1_genoma.download.log 2> _2.1_genoma.download.err
 echo '[2.2  ] descompactando o genoma ...'
@@ -75,7 +75,7 @@ wget -O gene.$tid.gtf.gz $2 1> _2.4_gtf.download.log 2> _2.4_gtf.download.err
 echo '[2.5  ] descompactando o GTF ...'
 gunzip gene.$tid.gtf.gz 1> _2.5_gtf.unzip.log 2> _2.5_gtf.unzip.err
 
-echo "[3    ] $(date +%D.%H-%M-%S) importando transcritos ..."
+echo "[3    ] $( date +%D.%H:%M:%S) importando transcritos ..."
 echo '[3.1  ] baixando os transcritos ...'
 wget -O cds.$tid.fa.gz $3 1> _3.1_transcripts.download.log 2> _3.1_transcripts.download.err
 echo '[3.2  ] descompactando os transcritos ...'
@@ -138,7 +138,7 @@ hisat2-build gene_seqs.fa idxgenes 1> _3.5_genes.index.log 2> _3.5_genes.index.e
 echo '[3.6  ] indexando os transcritos ...'
 salmon index -t cds.$tid.fa --index idx$tid 1> _3.6_transcripts.index.log 2> _3.6_transcripts.index.err
 
-echo "[4    ] $(date +%D.%H-%M-%S) quantificando amostras ..."
+echo "[4    ] $( date +%D.%H:%M:%S) quantificando amostras ..."
 i=1
 for x in $@
     do 
@@ -147,7 +147,7 @@ for x in $@
             RUN=`echo $x | cut -d, -f1`
             SAMPLE=`echo $x | cut -d, -f2`
 
-            echo "[4.$i.1] $(date +%D.%H-%M-%S) obtendo a amostra $SAMPLE pelo acesso $RUN no sra ..."
+            echo "[4.$i.1] $( date +%D.%H:%M:%S) obtendo a amostra $SAMPLE pelo acesso $RUN no sra ..."
             fastq-dump --split-3 --minReadLen $MIN_READ_LEN $RUN 1> _4.$i.1_download.$RUN.$SAMPLE.log 2> _4.$i.1_download.$RUN.$SAMPLE.err
             
             if [[ $(ls -lh | grep -c _[12].fastq) > 1 ]]
@@ -224,11 +224,11 @@ for x in $@
         fi
 done 
 
-echo "[5    ] $(date +%D.%H-%M-%S) executando o multiqc ..."
+echo "[5    ] $( date +%D.%H:%M:%S) executando o multiqc ..."
 multiqc out_*/qc_* 1> _5_multiqc.log 2> _5_multiqc.err
 
-echo "[6    ] $(date +%D.%H-%M-%S) compactando para RESULTS.zip ..."
+echo "[6    ] $( date +%D.%H:%M:%S) compactando para RESULTS.zip ..."
 zip RESULTS.zip out_*/*  multiqc_* *.log *.err 1> _6_zip.log 2> _6_zip.err
 cp RESULTS.zip ../ && cd ..
 
-echo $(date +%D.%H-%M-%S) terminado.
+echo $( date +%D.%H:%M:%S) terminado.
