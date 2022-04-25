@@ -1,5 +1,7 @@
 #!/bin/bash
 
+MIN_READ_LEN=80
+
 echo "[  1  ] $(date +%D.%H-%M-%S) prepando o ambiente..."
 tid=t$(date +%s)
 mkdir results$tid && cd results$tid
@@ -44,7 +46,7 @@ for pkg in multiqc biopython deeptools
     fi
     if [[ `pip list | grep $pkg` ]]
         then 
-        echo "usando o $pkg ! $( pip list | grep $pkg )" >> _1.0_pacotes.log
+        echo "usando o $pkg ! $( pip list | grep $pkg | tr -s \  \   )" >> _1.0_pacotes.log
     else
         echo ERRO: ao instalar pacote $pkg
     fi
@@ -150,7 +152,7 @@ for x in $@
             SAMPLE=`echo $x | cut -d, -f2`
 
             echo "[4.$i.1] $(date +%D.%H-%M-%S) obtendo a amostra $SAMPLE pelo acesso $RUN no sra ..."
-            fastq-dump --split-3 --minReadLen 80 $RUN 1> _4.$i.1_download.$RUN.$SAMPLE.log 2> _4.$i.1_download.$RUN.$SAMPLE.err
+            fastq-dump --split-3 --minReadLen $MIN_READ_LEN $RUN 1> _4.$i.1_download.$RUN.$SAMPLE.log 2> _4.$i.1_download.$RUN.$SAMPLE.err
             
             echo "[4.$i.2] fazendo controle de qualidade da amostra $SAMPLE com o trimmomatic ..."
             TrimmomaticPE \
@@ -169,8 +171,10 @@ for x in $@
             -o quant_$SAMPLE --libType IU --index idx$tid 1> _4.$i.4_quant.$SAMPLE.log 2> _4.$i.4_quant.$SAMPLE.err
 
             echo "[4.$i.5] mapeando com a amostra $SAMPLE com star ..."
+            ## https://www.biostars.org/p/169716/
             STAR --genomeDir idxgenes \
             --readFilesIn $SAMPLE.F.fq $SAMPLE.R.fq \
+            --outFilterScoreMinOverLread 0 --outFilterMatchNminOverLread 0  --outFilterMatchNmin 50 \
             --outSAMtype BAM SortedByCoordinate 1> _4.$i.5_map.$SAMPLE.log 2> _4.$i.5_map.$SAMPLE.err
 
             echo "[4.$i.6] gerando arquivo de cobertura para a amostra $SAMPLE com deeptools ..."
