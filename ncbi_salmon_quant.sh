@@ -44,7 +44,7 @@ for pkg in multiqc biopython deeptools
     fi
     if [[ `pip list | grep $pkg` ]]
         then 
-        echo "usando o $pkg ! $( pip list | grep $x )" >> _1.0_pacotes.log
+        echo "usando o $pkg ! $( pip list | grep $pkg )" >> _1.0_pacotes.log
     else
         echo ERRO: ao instalar pacote $pkg
     fi
