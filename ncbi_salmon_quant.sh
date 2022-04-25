@@ -58,11 +58,12 @@ if ! grep 'pysam.index(bamFile)' /usr/local/lib/python3.7/dist-packages/deeptool
     echo '        pysam.index(bamFile)' >> xtemp
     tail bamHandler.py -n+`grep -n 'bam = pysam.Samfile(bamFile' bamHandler.py | cut -d: -f1` >> xtemp
     cp xtemp /usr/local/lib/python3.7/dist-packages/deeptools/bamHandler.py
+    rm xtemp bamHandler.py
 fi
 
 echo '[2] importando a anotação ...'
 echo '[2.1] baixando o genoma ...'
-wget -O genoma.$tid.fa.gz $2 1> _2.1_genoma.download.log 2> _2.1_genoma.download.err
+wget -O genoma.$tid.fa.gz $1 1> _2.1_genoma.download.log 2> _2.1_genoma.download.err
 echo '[2.2] descompactando o genoma ...'
 gunzip genoma.$tid.fa.gz 1> _2.2_genoma.unzip.log 2> _2.2_genoma.unzip.err
 echo '[2.3] baixando o GTF ...'
