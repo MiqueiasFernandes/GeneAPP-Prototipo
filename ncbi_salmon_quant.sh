@@ -207,7 +207,7 @@ for x in $@
             mv quant_$SAMPLE out_$SAMPLE
             mv $SAMPLE.bed out_$SAMPLE
             mv $SAMPLE.sorted.bam out_$SAMPLE
-            rm *.fastq *.fq *.bam* -f
+            rm *.fastq *.fq *.bam* *.sam* -f
             (( i=i+1 ))       
         fi
 done 
