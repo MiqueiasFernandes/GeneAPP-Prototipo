@@ -2,7 +2,7 @@
 
 MIN_READ_LEN=80
 
-echo "[  1  ] $(date +%D.%H-%M-%S) prepando o ambiente..."
+echo "[1    ] $(date +%D.%H-%M-%S) prepando o ambiente..."
 tid=t$(date +%s)
 mkdir results$tid && cd results$tid
 
@@ -63,7 +63,7 @@ if ! grep 'pysam.index(bamFile)' /usr/local/lib/python3.7/dist-packages/deeptool
     rm xtemp bamHandler.py
 fi
 
-echo '[  2  ] $(date +%D.%H-%M-%S) importando genoma e a anotação ...'
+echo "[2    ] $(date +%D.%H-%M-%S) importando genoma e a anotação ..."
 echo '[2.1  ] baixando o genoma ...'
 wget -O genoma.$tid.fa.gz $1 1> _2.1_genoma.download.log 2> _2.1_genoma.download.err
 echo '[2.2  ] descompactando o genoma ...'
@@ -73,7 +73,7 @@ wget -O gene.$tid.gtf.gz $2 1> _2.3_gtf.download.log 2> _2.3_gtf.download.err
 echo '[2.4  ] descompactando o GTF ...'
 gunzip gene.$tid.gtf.gz 1> _2.4_gtf.unzip.log 2> _2.4_gtf.unzip.err
 
-echo '[  3  ] $(date +%D.%H-%M-%S) importando transcritos ...'
+echo "[3    ] $(date +%D.%H-%M-%S) importando transcritos ..."
 echo '[3.1  ] baixando os transcritos ...'
 wget -O cds.$tid.fa.gz $3 1> _3.1_transcripts.download.log 2> _3.1_transcripts.download.err
 echo '[3.2  ] descompactando os transcritos ...'
@@ -142,7 +142,7 @@ STAR --runMode genomeGenerate --genomeDir idxgenes  --genomeFastaFiles gene_seqs
 echo '[3.6  ] indexando os transcritos ...'
 salmon index -t cds.$tid.fa --index idx$tid 1> _3.6_transcripts.index.log 2> _3.6_transcripts.index.err
 
-echo '[  4  ] quantificando amostras ...'
+echo "[4    ] $(date +%D.%H-%M-%S) quantificando amostras ..."
 i=1
 for x in $@
     do 
@@ -192,10 +192,10 @@ for x in $@
         fi
 done 
 
-echo '[  5  ] $(date +%D.%H-%M-%S) executando o multiqc ...'
+echo "[5    ] $(date +%D.%H-%M-%S) executando o multiqc ..."
 multiqc out_*/qc_* 1> _5_multiqc.log 2> _5_multiqc.err
 
-echo '[  6  ] $(date +%D.%H-%M-%S) compactando para RESULTS.zip ...'
+echo "[6    ] $(date +%D.%H-%M-%S) compactando para RESULTS.zip ..."
 zip RESULTS.zip out_*/*  multiqc_* *.log *.err 1> _6_zip.log 2> _6_zip.err
 cp RESULTS.zip ../ && cd ..
 
