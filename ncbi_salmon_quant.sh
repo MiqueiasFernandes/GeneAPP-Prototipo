@@ -148,7 +148,7 @@ echo '[3.6  ] indexando os transcritos ...'
 salmon index -t cds.$tid.fa --index idx$tid 1> _3.6_transcripts.index.log 2> _3.6_transcripts.index.err
 
 TEMP_DIR=$4
-if [ -d $TEMP_DIR ]
+if [ ! -d $TEMP_DIR ]
     then 
     echo "criando diretorio temporario: $TEMP_DIR" >> resumo.txt
     mkdir  $TEMP_DIR
@@ -157,8 +157,8 @@ fi
 salvar () {
     rm logs -rf && mkdir logs
     cp *.log *.err resumo.txt logs
-    zip -r $1.zip out_$1*/**
-    zip -r logs.zip logs/**
+    zip -r $1.zip out_$1*/** 1>/dev/null 2>/dev/null
+    zip -r logs.zip logs/** 1>/dev/null 2>/dev/null
     cp $1.zip logs.zip $TEMP_DIR
 }
 
