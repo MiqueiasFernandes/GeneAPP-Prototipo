@@ -7,11 +7,11 @@ mkdir results$tid
 TEMP_DIR=$4
 if [ ! -d $TEMP_DIR ]
     then 
-    echo "criando diretorio temporario: $TEMP_DIR" > resumo.txt
+    echo "criando diretorio temporario: $TEMP_DIR" > results$tid/resumo.txt
     mkdir  $TEMP_DIR
 fi
 cd results$tid
-echo "[1    ] $( date +%D.%H:%M:%S) prepando o ambiente results$tid/ ..."
+echo "[1    ] $( date +%D.%H:%M:%S) preparando o ambiente results$tid/ ..."
 p=1
 
 ## sra-toolkit : https://github.com/ncbi/sra-tools/wiki/HowTo:-fasterq-dump
@@ -167,9 +167,9 @@ restaurar () {
     then 
         cp $TEMP_DIR/$1.zip .
         unzip $1.zip
-        return 1
-    else
         return 0
+    else
+        return 1
     fi
 }
 
@@ -183,7 +183,7 @@ for x in $@
             RUN=`echo $x | cut -d, -f1`
             SAMPLE=`echo $x | cut -d, -f2`
 
-            if [ $(restaurar $SAMPLE) = 1 ]
+            if $(restaurar $SAMPLE)
                 then 
                     echo "$SAMPLE restaurado de $TEMP_DIR/ ..."
                     continue
