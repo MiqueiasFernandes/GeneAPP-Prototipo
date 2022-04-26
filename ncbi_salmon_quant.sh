@@ -68,18 +68,24 @@ echo '[2.1  ] baixando o genoma ...'
 wget -O genoma.$tid.fa.gz $1 1> _2.1_genoma.download.log 2> _2.1_genoma.download.err
 echo '[2.2  ] descompactando o genoma ...'
 gunzip genoma.$tid.fa.gz 1> _2.2_genoma.unzip.log 2> _2.2_genoma.unzip.err
+echo "Tamanho do genoma: $(grep -v \>  genoma.$tid.fa | tr -d '\n' | wc -c | rev | cut -c7- | rev)Mpb" > resumo.txt
+echo "Quantiade de sequencias: $(grep -c \>  genoma.$tid.fa)"  >> resumo.txt
 echo '[2.3  ] indexando o genoma ...'
 hisat2-build genoma.$tid.fa idxgenoma.$tid 1> _2.3_genoma.index.log 2> _2.3_genoma.index.err
 echo '[2.4  ] baixando o GTF ...'
 wget -O gene.$tid.gtf.gz $2 1> _2.4_gtf.download.log 2> _2.4_gtf.download.err
 echo '[2.5  ] descompactando o GTF ...'
 gunzip gene.$tid.gtf.gz 1> _2.5_gtf.unzip.log 2> _2.5_gtf.unzip.err
+echo "Quantidade de genes: $(grep -v '^#' gene.$tid.gtf | cut -f 3 | grep -c gene)"  >> resumo.txt
 
 echo "[3    ] $( date +%D.%H:%M:%S) importando transcritos ..."
 echo '[3.1  ] baixando os transcritos ...'
 wget -O cds.$tid.fa.gz $3 1> _3.1_transcripts.download.log 2> _3.1_transcripts.download.err
 echo '[3.2  ] descompactando os transcritos ...'
 gunzip cds.$tid.fa.gz 1> _3.2_transcripts.unzip.log 2> _3.2_transcripts.unzip.err
+echo "Quantidade de genes cod prot: $(grep -v '^#' cds.$tid.fa | cut -f3,9 | grep '^CDS' | cut -f2 | tr \; '\n' | grep '^gene_id ' | uniq | wc -l)"  >> resumo.txt
+echo "Quantiade de sequencias CDS: $(grep -c \>  cds.$tid.fa)"  >> resumo.txt
+echo "Tamanho total da CDS: $(grep -v \>  cds.$tid.fa | tr -d '\n' | wc -c | rev | cut -c7- | rev)Mpb"  >> resumo.txt
 
 echo '[3.3  ] filtrando os transcritos ...'
 echo "cds = 'cds.$tid.fa'" > script.py
@@ -111,6 +117,9 @@ open(cds, 'w').writelines(as_cds)
 EOF
 python3 script.py 1> _3.3_transcripts.filter.log 2> _3.3_transcripts.filter.err
 rm script.py
+echo "Genes com AS anotado: $(grep 'genes com AS' _3.3_transcripts.filter.log | head -1 | cut -d\  -f1)"  >> resumo.txt
+echo "CDS de genes com AS anotado: $(grep -c \>  cds.$tid.fa)"  >> resumo.txt
+echo "Tamanho total da CDS de genes com AS: $(grep -v \>  cds.$tid.fa | tr -d '\n' | wc -c | rev | cut -c7- | rev)Mpb"  >> resumo.txt
 
 echo '[3.4  ] extraindo sequencia de genes ...'
 echo "cds = 'cds.$tid.fa'" > script.py
@@ -138,6 +147,27 @@ hisat2-build gene_seqs.fa idxgenes 1> _3.5_genes.index.log 2> _3.5_genes.index.e
 echo '[3.6  ] indexando os transcritos ...'
 salmon index -t cds.$tid.fa --index idx$tid 1> _3.6_transcripts.index.log 2> _3.6_transcripts.index.err
 
+TEMP_DIR=$4
+
+salvar () {
+    rm logs -rf && mkdir logs
+    cp *.log *.err logs
+    zip -r $1.zip out_$1*/**
+    zip -r logs.zip logs/**
+    cp $1.zip logs.zip $TEMP_DIR
+}
+
+restaurar () {
+    if [ -f $TEMP_DIR/$1.zip ]
+    then 
+        cp $TEMP_DIR/$1.zip .
+        unzip $1.zip
+        return 1
+    else
+        return 0
+    fi
+}
+
 echo "[4    ] $( date +%D.%H:%M:%S) quantificando amostras ..."
 i=1
 for x in $@
@@ -147,9 +177,24 @@ for x in $@
             RUN=`echo $x | cut -d, -f1`
             SAMPLE=`echo $x | cut -d, -f2`
 
+            if [ restaurar $SAMPLE -eq 1 ]
+                then 
+                echo "$SAMPLE restaurado de $TEMP_DIR/ ..."
+                continue
+            fi
+
             echo "[4.$i.1] $( date +%D.%H:%M:%S) obtendo a amostra $SAMPLE pelo acesso $RUN no sra ..."
             fastq-dump --split-3 --minReadLen $MIN_READ_LEN $RUN 1> _4.$i.1_download.$RUN.$SAMPLE.log 2> _4.$i.1_download.$RUN.$SAMPLE.err
             
+            ##spots lidos, % com qualidade
+            ##tam med das seqs do spot
+            ##tipo PE ou SE
+            ##% meapado no genoma
+            ##% mapeado na cds
+            ##% com expressao
+            ##script dpara gerar o oo bed
+
+
             if [[ $(ls -lh | grep -c _[12].fastq) > 1 ]]
                 then
                 echo "[4.$i.2] fazendo controle de qualidade da amostra $SAMPLE com o TrimmomaticPE ..."
@@ -220,12 +265,17 @@ for x in $@
             mv $SAMPLE.sorted.bam out_$SAMPLE
             mv _4.$i.*.log  _4.$i.*.err out_$SAMPLE
             rm *.fastq *.fq *.bam* *.sam* -f
-            (( i=i+1 ))       
+            (( i=i+1 )) 
+            salvar $SAMPLE   
         fi
 done 
 
 echo "[5    ] $( date +%D.%H:%M:%S) executando o multiqc ..."
 multiqc out_*/qc_* 1> _5_multiqc.log 2> _5_multiqc.err
+rm logs -rf && mkdir logs
+cp *.log *.err logs
+zip -r logs.zip logs/**
+cp logs.zip multiqc_*.html $TEMP_DIR
 
 echo "[6    ] $( date +%D.%H:%M:%S) compactando para RESULTS.zip ..."
 zip -r RESULTS.zip out_*/**  multiqc_*.html *.log *.err
