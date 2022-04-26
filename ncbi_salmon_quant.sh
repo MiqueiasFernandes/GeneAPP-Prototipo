@@ -148,9 +148,9 @@ echo '[3.6  ] indexando os transcritos ...'
 salmon index -t cds.$tid.fa --index idx$tid 1> _3.6_transcripts.index.log 2> _3.6_transcripts.index.err
 
 TEMP_DIR=$4
-if [ -d sample_data ]
+if [ -d $TEMP_DIR ]
     then 
-    echo "diretorio temporario: $TEMP_DIR" >> resumo.txt
+    echo "criando diretorio temporario: $TEMP_DIR" >> resumo.txt
     mkdir  $TEMP_DIR
 fi
 
@@ -183,7 +183,7 @@ for x in $@
             SAMPLE=`echo $x | cut -d, -f2`
             echo "Rodando $RUN em $SAMPLE ..." >> resumo.txt
 
-            if [ restaurar $SAMPLE -eq 1 ]
+            if [ $(restaurar $SAMPLE) -eq 1 ]
                 then 
                 echo "$SAMPLE restaurado de $TEMP_DIR/ ..."
                 continue
