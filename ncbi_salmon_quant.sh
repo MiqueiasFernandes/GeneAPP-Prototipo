@@ -1,11 +1,17 @@
 #!/bin/bash
 
 MIN_READ_LEN=80
-TZ=America/Sao_Paulo
+export TZ=America/Sao_Paulo
 tid=t$(date +%s)
-mkdir results$tid && cd results$tid
+mkdir results$tid
+TEMP_DIR=$4
+if [ ! -d $TEMP_DIR ]
+    then 
+    echo "criando diretorio temporario: $TEMP_DIR" > resumo.txt
+    mkdir  $TEMP_DIR
+fi
+cd results$tid
 echo "[1    ] $( date +%D.%H:%M:%S) prepando o ambiente results$tid/ ..."
-
 p=1
 
 ## sra-toolkit : https://github.com/ncbi/sra-tools/wiki/HowTo:-fasterq-dump
@@ -68,7 +74,7 @@ echo '[2.1  ] baixando o genoma ...'
 wget -O genoma.$tid.fa.gz $1 1> _2.1_genoma.download.log 2> _2.1_genoma.download.err
 echo '[2.2  ] descompactando o genoma ...'
 gunzip genoma.$tid.fa.gz 1> _2.2_genoma.unzip.log 2> _2.2_genoma.unzip.err
-echo "Tamanho do genoma: $(grep -v \>  genoma.$tid.fa | tr -d '\n' | wc -c | rev | cut -c7- | rev)Mpb" > resumo.txt
+echo "Tamanho do genoma: $(grep -v \>  genoma.$tid.fa | tr -d '\n' | wc -c | rev | cut -c7- | rev)Mpb" >> resumo.txt
 echo "Quantiade de sequencias: $(grep -c \>  genoma.$tid.fa)"  >> resumo.txt
 echo '[2.3  ] indexando o genoma ...'
 hisat2-build genoma.$tid.fa idxgenoma.$tid 1> _2.3_genoma.index.log 2> _2.3_genoma.index.err
@@ -147,13 +153,6 @@ hisat2-build gene_seqs.fa idxgenes 1> _3.5_genes.index.log 2> _3.5_genes.index.e
 echo '[3.6  ] indexando os transcritos ...'
 salmon index -t cds.$tid.fa --index idx$tid 1> _3.6_transcripts.index.log 2> _3.6_transcripts.index.err
 
-TEMP_DIR=$4
-if [ ! -d $TEMP_DIR ]
-    then 
-    echo "criando diretorio temporario: $TEMP_DIR" >> resumo.txt
-    mkdir  $TEMP_DIR
-fi
-
 salvar () {
     rm logs -rf && mkdir logs
     cp *.log *.err resumo.txt logs
@@ -181,12 +180,13 @@ for x in $@
         then
             RUN=`echo $x | cut -d, -f1`
             SAMPLE=`echo $x | cut -d, -f2`
-            echo "Rodando $RUN em $SAMPLE ..." >> resumo.txt
 
-            if [ $(restaurar $SAMPLE) -eq 1 ]
+            if [ $(restaurar $SAMPLE) = 1 ]
                 then 
-                echo "$SAMPLE restaurado de $TEMP_DIR/ ..."
-                continue
+                    echo "$SAMPLE restaurado de $TEMP_DIR/ ..."
+                    continue
+                else
+                    echo "Rodando $RUN em $SAMPLE ..." >> resumo.txt
             fi
 
             echo "[4.$i.1] $( date +%D.%H:%M:%S) obtendo a amostra $SAMPLE pelo acesso $RUN no sra ..."
