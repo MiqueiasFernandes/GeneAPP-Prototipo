@@ -75,7 +75,7 @@ wget -O genoma.$tid.fa.gz $1 1> _2.1_genoma.download.log 2> _2.1_genoma.download
 echo '[2.2  ] descompactando o genoma ...'
 gunzip genoma.$tid.fa.gz 1> _2.2_genoma.unzip.log 2> _2.2_genoma.unzip.err
 echo "Tamanho do genoma: $(grep -v \>  genoma.$tid.fa | tr -d '\n' | wc -c | rev | cut -c7- | rev)Mpb" >> resumo.txt
-echo "Quantiade de sequencias: $(grep -c \>  genoma.$tid.fa)"  >> resumo.txt
+echo "Quantiade de sequencias no genoma: $(grep -c \>  genoma.$tid.fa)"  >> resumo.txt
 echo '[2.3  ] indexando o genoma ...'
 hisat2-build genoma.$tid.fa idxgenoma.$tid 1> _2.3_genoma.index.log 2> _2.3_genoma.index.err
 echo '[2.4  ] baixando o GTF ...'
@@ -89,7 +89,7 @@ echo '[3.1  ] baixando os transcritos ...'
 wget -O cds.$tid.fa.gz $3 1> _3.1_transcripts.download.log 2> _3.1_transcripts.download.err
 echo '[3.2  ] descompactando os transcritos ...'
 gunzip cds.$tid.fa.gz 1> _3.2_transcripts.unzip.log 2> _3.2_transcripts.unzip.err
-echo "Quantidade de genes cod prot: $(grep -v '^#' cds.$tid.fa | cut -f3,9 | grep '^CDS' | cut -f2 | tr \; '\n' | grep '^gene_id ' | uniq | wc -l)"  >> resumo.txt
+echo "Quantidade de genes cod prot: $(grep -v '^#' gene.$tid.gtf | cut -f3,9 | grep '^CDS' | cut -f2 | tr \; '\n' | grep '^gene_id ' | uniq | wc -l)"  >> resumo.txt
 echo "Quantiade de sequencias CDS: $(grep -c \>  cds.$tid.fa)"  >> resumo.txt
 echo "Tamanho total da CDS: $(grep -v \>  cds.$tid.fa | tr -d '\n' | wc -c | rev | cut -c7- | rev)Mpb"  >> resumo.txt
 
