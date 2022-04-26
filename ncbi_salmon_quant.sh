@@ -158,6 +158,7 @@ salvar () {
     cp *.log *.err resumo.txt logs
     zip -r $1.zip out_$1*/** 1>/dev/null 2>/dev/null
     zip -r logs.zip logs/** 1>/dev/null 2>/dev/null
+    echo "Salvando $1.zip e logs.zip em  $TEMP_DIR ..." >> resumo.txt
     cp $1.zip logs.zip $TEMP_DIR
 }
 
@@ -173,6 +174,7 @@ restaurar () {
 }
 
 echo "[4    ] $( date +%D.%H:%M:%S) quantificando amostras ..."
+GENE=$(grep \> gene_seqs.fa | head -1000 | tail | head -1 | tr -d \> | cut -d\   -f1)
 i=1
 for x in $@
     do 
@@ -257,7 +259,6 @@ for x in $@
             bamtools sort -in $SAMPLE.maped.bam -out $SAMPLE.sorted.bam  1> _4.$i.7_bam.$SAMPLE.log 2>> _4.$i.7_bam.$SAMPLE.err
 
             echo "[4.$i.8] gerando arquivo de cobertura para a amostra $SAMPLE com deeptools ..."
-            GENE=$(grep \> gene_seqs.fa | head -1000 | tail -1 | tr -d \> | cut -d\   -f1)
             bamCoverage -b $SAMPLE.sorted.bam -o $SAMPLE.bed --outFileFormat bedgraph --binSize 3 -p 2 -r $GENE 1> _4.$i.8_cov.$SAMPLE.log 2> _4.$i.8_cov.$SAMPLE.err
 
             echo "[4.$i.9] limpando dados de $SAMPLE ..."
@@ -278,11 +279,11 @@ echo "[5    ] $( date +%D.%H:%M:%S) executando o multiqc ..."
 multiqc out_*/qc_* 1> _5_multiqc.log 2> _5_multiqc.err
 rm logs -rf && mkdir logs
 cp *.log *.err logs
-zip -r logs.zip logs/**
+zip -r logs.zip logs/** 1>/dev/null 2>/dev/null
 cp logs.zip multiqc_*.html $TEMP_DIR
 
 echo "[6    ] $( date +%D.%H:%M:%S) compactando para RESULTS.zip ..."
-zip -r RESULTS.zip out_*/**  multiqc_*.html *.log *.err
+zip -r RESULTS.zip out_*/**  multiqc_*.html *.log *.err 1>/dev/null 2>/dev/null
 cp RESULTS.zip ../ && cd ..
 
 echo $( date +%D.%H:%M:%S) terminado.
