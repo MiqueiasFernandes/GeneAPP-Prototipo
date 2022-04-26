@@ -177,7 +177,6 @@ for x in $@
             fi
             
             echo "[4.$i.4] mapeando $SAMPLE  no genoma com hisat2..."
-            rm qc_$SAMPLE -rf && mkdir qc_$SAMPLE
             if [[ $(ls -lh | grep -c _[12].fastq) > 1 ]]
                 then
                     hisat2 -x idxgenoma.$tid -1 $SAMPLE.F.fq -2 $SAMPLE.R.fq --no-unal -S $SAMPLE.maped.sam 1> _4.$i.4_genomap.$SAMPLE.log 2> _4.$i.4_genomap.$SAMPLE.err
@@ -219,6 +218,7 @@ for x in $@
             mv quant_$SAMPLE out_$SAMPLE
             mv $SAMPLE.bed out_$SAMPLE
             mv $SAMPLE.sorted.bam out_$SAMPLE
+            mv _4.$i.*.log  _4.$i.*.err out_$SAMPLE
             rm *.fastq *.fq *.bam* *.sam* -f
             (( i=i+1 ))       
         fi
@@ -228,7 +228,7 @@ echo "[5    ] $( date +%D.%H:%M:%S) executando o multiqc ..."
 multiqc out_*/qc_* 1> _5_multiqc.log 2> _5_multiqc.err
 
 echo "[6    ] $( date +%D.%H:%M:%S) compactando para RESULTS.zip ..."
-zip RESULTS.zip out_*/*  multiqc_* *.log *.err 1> _6_zip.log 2> _6_zip.err
+zip -r RESULTS.zip out_*/**  multiqc_*.html *.log *.err
 cp RESULTS.zip ../ && cd ..
 
 echo $( date +%D.%H:%M:%S) terminado.
