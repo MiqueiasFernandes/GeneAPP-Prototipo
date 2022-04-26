@@ -148,10 +148,15 @@ echo '[3.6  ] indexando os transcritos ...'
 salmon index -t cds.$tid.fa --index idx$tid 1> _3.6_transcripts.index.log 2> _3.6_transcripts.index.err
 
 TEMP_DIR=$4
+if [ -d sample_data ]
+    then 
+    echo "diretorio temporario: $TEMP_DIR" >> resumo.txt
+    mkdir  $TEMP_DIR
+fi
 
 salvar () {
     rm logs -rf && mkdir logs
-    cp *.log *.err logs
+    cp *.log *.err resumo.txt logs
     zip -r $1.zip out_$1*/**
     zip -r logs.zip logs/**
     cp $1.zip logs.zip $TEMP_DIR
@@ -176,6 +181,7 @@ for x in $@
         then
             RUN=`echo $x | cut -d, -f1`
             SAMPLE=`echo $x | cut -d, -f2`
+            echo "Rodando $RUN em $SAMPLE ..." >> resumo.txt
 
             if [ restaurar $SAMPLE -eq 1 ]
                 then 
@@ -185,19 +191,12 @@ for x in $@
 
             echo "[4.$i.1] $( date +%D.%H:%M:%S) obtendo a amostra $SAMPLE pelo acesso $RUN no sra ..."
             fastq-dump --split-3 --minReadLen $MIN_READ_LEN $RUN 1> _4.$i.1_download.$RUN.$SAMPLE.log 2> _4.$i.1_download.$RUN.$SAMPLE.err
+            grep 'Read' _4.$i.1_download.$RUN.$SAMPLE.log >> resumo.txt
             
-            ##spots lidos, % com qualidade
-            ##tam med das seqs do spot
-            ##tipo PE ou SE
-            ##% meapado no genoma
-            ##% mapeado na cds
-            ##% com expressao
-            ##script dpara gerar o oo bed
-
-
             if [[ $(ls -lh | grep -c _[12].fastq) > 1 ]]
                 then
                 echo "[4.$i.2] fazendo controle de qualidade da amostra $SAMPLE com o TrimmomaticPE ..."
+                echo "tratando $SAMPLE como PE ..." >> resumo.txt
                 TrimmomaticPE \
                     $RUN\_1.fastq $RUN\_2.fastq \
                     $SAMPLE.F.fq $SAMPLE.1.unp.fq \
@@ -206,11 +205,13 @@ for x in $@
                     1> _4.$i.2_qc.$SAMPLE.log 2> _4.$i.2_qc.$SAMPLE.err
                 else
                 echo "[4.$i.2] fazendo controle de qualidade da amostra $SAMPLE com o TrimmomaticSE ..."
+                echo "tratando $SAMPLE como SE ..." >> resumo.txt
                 TrimmomaticSE \
                     $RUN.fastq $SAMPLE.fq \
                     ILLUMINACLIP:TruSeq3-PE.fa:2:30:10:2:True LEADING:3 TRAILING:3 MINLEN:36 \
                     1> _4.$i.2_qc.$SAMPLE.log 2> _4.$i.2_qc.$SAMPLE.err
             fi
+            grep 'Surviving' _4.$i.2_qc.$SAMPLE.err >> resumo.txt
             
             echo "[4.$i.3] reportando controle de qualidade da amostra $SAMPLE com fastqc ..."
             rm qc_$SAMPLE -rf && mkdir qc_$SAMPLE
@@ -229,6 +230,7 @@ for x in $@
                     hisat2 -x idxgenoma.$tid -U $SAMPLE.fq --no-unal -S $SAMPLE.maped.sam 1> _4.$i.4_genomap.$SAMPLE.log 2> _4.$i.4_genomap.$SAMPLE.err
             fi
             rm $SAMPLE.maped.sam
+            echo "Mapeamento no genoma: $(grep 'overall' _4.$i.4_genomap.$SAMPLE.err)" >> resumo.txt
 
             echo "[4.$i.5] quantificando com a amostra $SAMPLE com salmon ..."
             if [[ $(ls -lh | grep -c _[12].fastq) > 1 ]]
@@ -239,6 +241,7 @@ for x in $@
                     salmon quant -r $SAMPLE.fq \
             -o quant_$SAMPLE --libType IU --index idx$tid 1> _4.$i.5_quant.$SAMPLE.log 2> _4.$i.5_quant.$SAMPLE.err
             fi
+            echo "CDS expressa em $SAMPLE: $(cut -f4 quant_$SAMPLE/quant.sf | tail -n+2 | grep -cv  '^0$')" >> resumo.txt
 
             echo "[4.$i.6] mapeando com a amostra $SAMPLE com hisat2 ..."
             if [[ $(ls -lh | grep -c _[12].fastq) > 1 ]]
@@ -247,6 +250,7 @@ for x in $@
                 else
                     hisat2 -x idxgenes -U $SAMPLE.fq --no-unal -S $SAMPLE.maped.sam  1> _4.$i.6_map.$SAMPLE.log 2> _4.$i.6_map.$SAMPLE.err
             fi
+            echo "Mapeamento na CDS: $(grep 'overall' _4.$i.6_map.$SAMPLE.err)" >> resumo.txt
             
             echo "[4.$i.7] transformando sam em bam ordenado do $SAMPLE com samtools ..."
             samtools view -S -b $SAMPLE.maped.sam > $SAMPLE.maped.bam  2> _4.$i.7_bam.$SAMPLE.err
