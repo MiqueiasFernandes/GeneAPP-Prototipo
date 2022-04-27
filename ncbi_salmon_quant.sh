@@ -10,6 +10,7 @@ if [ ! -d $TEMP_DIR ]
     echo "criando diretorio temporario: $TEMP_DIR" > results$tid/resumo.txt
     mkdir  $TEMP_DIR
 fi
+TEMP_DIR="../$TEMP_DIR"
 cd results$tid
 echo "[1    ] $( date +%D.%H:%M:%S) preparando o ambiente results$tid/ ..."
 p=1
@@ -135,9 +136,11 @@ cat >> script.py << EOF
 from Bio import SeqIO, Seq, SeqRecord
 gen_acecc = set([l.split('gene=')[1].split()[0].replace(']', '') for l in open(cds).readlines() if l.startswith('>')])
 gns = [l.strip().split('\t') for l in open(gtf).readlines() if '\tgene\t' in l]
-cords = [[x[0], int(x[3]), int(x[4]), x[6] == '+', x[-1].split('"')[1]] for x in gns]
+cords = [[x[0], int(x[3]), int(x[4]), x[6] == '+', 
+          [z.split('"')[1] for z in [k.strip() for k in x[-1].split(";")] if z.startswith('gene_id "') or z.startswith('gene "')]
+          ] for x in gns]
 print(len(cords), 'genes no GTF')
-cords = [x for x in cords if x[-1] in gen_acecc]
+cords = [x for x in cords if any([z for z in x[-1] if z in gen_acecc])]
 print(len(cords), 'genes a exportar')
 seqs = SeqIO.to_dict(SeqIO.parse(genoma, 'fasta'))
 gseqsF = [SeqRecord.SeqRecord(seqs[s[0]].seq[s[1]-1:s[2]], id=s[-1], description='') for s in cords if s[3]]
