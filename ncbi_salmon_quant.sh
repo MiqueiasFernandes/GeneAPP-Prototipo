@@ -143,8 +143,8 @@ print(len(cords), 'genes no GTF')
 cords = [x for x in cords if any([z for z in x[-1] if z in gen_acecc])]
 print(len(cords), 'genes a exportar')
 seqs = SeqIO.to_dict(SeqIO.parse(genoma, 'fasta'))
-gseqsF = [SeqRecord.SeqRecord(seqs[s[0]].seq[s[1]-1:s[2]], id=s[-1], description='') for s in cords if s[3]]
-gseqsR = [SeqRecord.SeqRecord(seqs[s[0]].seq[s[1]:s[2]+1].reverse_complement(), id=s[-1], description='') for s in cords if not s[3]]
+gseqsF = [SeqRecord.SeqRecord(seqs[s[0]].seq[s[1]-1:s[2]], id=s[-1][0], description=s[-1][1]) for s in cords if s[3]]
+gseqsR = [SeqRecord.SeqRecord(seqs[s[0]].seq[s[1]:s[2]+1].reverse_complement(), id=s[-1][0], description=s[-1][1]) for s in cords if not s[3]]
 SeqIO.write(gseqsF+gseqsR, 'gene_seqs.fa', 'fasta')
 print('finalizado.')
 EOF
