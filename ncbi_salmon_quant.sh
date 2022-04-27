@@ -59,7 +59,7 @@ for pkg in multiqc biopython deeptools
     fi
 done
 
-if ! grep 'pysam.index(bamFile)' /usr/local/lib/python3.7/dist-packages/deeptools/bamHandler.py
+if ! grep 'pysam.index(bamFile)' /usr/local/lib/python3.7/dist-packages/deeptools/bamHandler.py 1>/dev/null 2>/dev/null
     then
     cp /usr/local/lib/python3.7/dist-packages/deeptools/bamHandler.py .
     cp bamHandler.py /usr/local/lib/python3.7/dist-packages/deeptools/bamHandler.py.old
@@ -77,7 +77,7 @@ echo '[2.2  ] descompactando o genoma ...'
 gunzip genoma.$tid.fa.gz 1> _2.2_genoma.unzip.log 2> _2.2_genoma.unzip.err
 echo "Tamanho do genoma: $(grep -v \>  genoma.$tid.fa | tr -d '\n' | wc -c | rev | cut -c7- | rev)Mpb" >> resumo.txt
 echo "Quantiade de sequencias no genoma: $(grep -c \>  genoma.$tid.fa)"  >> resumo.txt
-echo '[2.3  ] indexando o genoma ...'
+echo '[2.3  ] indexando o genoma para validar as amostras ...'
 hisat2-build genoma.$tid.fa idxgenoma.$tid 1> _2.3_genoma.index.log 2> _2.3_genoma.index.err
 echo '[2.4  ] baixando o GTF ...'
 wget -O gene.$tid.gtf.gz $2 1> _2.4_gtf.download.log 2> _2.4_gtf.download.err
@@ -150,10 +150,10 @@ print('finalizado.')
 EOF
 python3 script.py 1> _3.4_genes.extract.log 2> _3.4_genes.extract.err
 rm script.py
-echo '[3.5  ] indexando sequencia de genes ...'
+echo '[3.5  ] indexando sequencia de genes para gerar o BED ...'
 hisat2-build gene_seqs.fa idxgenes 1> _3.5_genes.index.log 2> _3.5_genes.index.err
 
-echo '[3.6  ] indexando os transcritos ...'
+echo '[3.6  ] indexando os transcritos para quantificar ...'
 salmon index -t cds.$tid.fa --index idx$tid 1> _3.6_transcripts.index.log 2> _3.6_transcripts.index.err
 
 salvar () {
@@ -168,8 +168,9 @@ salvar () {
 restaurar () {
     if [ -f $TEMP_DIR/$1.zip ]
     then 
+        echo "tentando restaurar $TEMP_DIR/$1.zip" >> resumo.txt
         cp $TEMP_DIR/$1.zip .
-        unzip $1.zip
+        unzip $1.zip 1>/dev/null 2>/dev/null
         return 0
     else
         return 1
@@ -186,7 +187,7 @@ for x in $@
             RUN=`echo $x | cut -d, -f1`
             SAMPLE=`echo $x | cut -d, -f2`
 
-            if $(restaurar $SAMPLE)
+            if restaurar $SAMPLE
                 then 
                     echo "$SAMPLE restaurado de $TEMP_DIR/ ..."
                     continue
