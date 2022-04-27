@@ -152,7 +152,7 @@ print('finalizado.')
 EOF
 python3 script.py 1> _3.5_genes.extract.log 2> _3.5_genes.extract.err
 rm script.py
-echo '[3.6  ] indexando sequencia de genes para gerar o BED ...'
+echo '[3.6  ] indexando sequencia de AS genes para gerar o BED ...'
 hisat2-build gene_seqs.fa idxgenes 1> _3.6_genes.index.log 2> _3.6_genes.index.err
 
 echo '[3.7  ] indexando os transcritos para quantificar ...'
@@ -268,7 +268,7 @@ for x in $@
                 else
                     hisat2 -x idxgenes -U $SAMPLE.fq --no-unal -S $SAMPLE.maped.sam  1> _4.$i.7_map.$SAMPLE.log 2> _4.$i.7_map.$SAMPLE.err
             fi
-            echo "Mapeamento na CDS: $(grep 'overall' _4.$i.7_map.$SAMPLE.err)" >> resumo.txt
+            echo "Mapeamento nos AS genes: $(grep 'overall' _4.$i.7_map.$SAMPLE.err)" >> resumo.txt
             
             echo "[4.$i.8] gerando arquivo de cobertura para a amostra $SAMPLE com deeptools ..."
             samtools view -S -b $SAMPLE.maped.sam > $SAMPLE.maped.bam  2> _4.$i.8_bam.$SAMPLE.err
