@@ -93,8 +93,10 @@ gunzip cds.$tid.fa.gz 1> _3.2_transcripts.unzip.log 2> _3.2_transcripts.unzip.er
 echo "Quantidade de genes cod prot: $(grep -v '^#' gene.$tid.gtf | cut -f3,9 | grep '^CDS' | cut -f2 | tr \; '\n' | grep '^gene_id ' | uniq | wc -l)"  >> resumo.txt
 echo "Quantiade de sequencias CDS: $(grep -c \>  cds.$tid.fa)"  >> resumo.txt
 echo "Tamanho total da CDS: $(grep -v \>  cds.$tid.fa | tr -d '\n' | wc -c | rev | cut -c7- | rev)Mpb"  >> resumo.txt
+echo '[3.3  ] indexando todos transcritos para validar a anotacao ...'
+hisat2-build cds.$tid.fa idxcds.$tid 1> _3.3_cds.index.log 2> _3.3_cds.index.err
 
-echo '[3.3  ] filtrando os transcritos ...'
+echo '[3.4  ] filtrando os transcritos ...'
 echo "cds = 'cds.$tid.fa'" > script.py
 cat >> script.py << EOF 
 seqs = [(l.strip(), l[1:-1].split()) for l in open(cds).readlines() if l.startswith('>')]
@@ -122,13 +124,13 @@ for l in open(cds).readlines():
     as_cds.append(l)
 open(cds, 'w').writelines(as_cds)
 EOF
-python3 script.py 1> _3.3_transcripts.filter.log 2> _3.3_transcripts.filter.err
+python3 script.py 1> _3.4_transcripts.filter.log 2> _3.4_transcripts.filter.err
 rm script.py
 echo "Genes com AS anotado: $(grep 'genes com AS' _3.3_transcripts.filter.log | head -1 | cut -d\  -f1)"  >> resumo.txt
 echo "CDS de genes com AS anotado: $(grep -c \>  cds.$tid.fa)"  >> resumo.txt
 echo "Tamanho total da CDS de genes com AS: $(grep -v \>  cds.$tid.fa | tr -d '\n' | wc -c | rev | cut -c7- | rev)Mpb"  >> resumo.txt
 
-echo '[3.4  ] extraindo sequencia de genes ...'
+echo '[3.5  ] extraindo sequencia de genes ...'
 echo "cds = 'cds.$tid.fa'" > script.py
 echo "genoma = 'genoma.$tid.fa'" >> script.py
 echo "gtf = 'gene.$tid.gtf'" >> script.py
@@ -148,13 +150,13 @@ gseqsR = [SeqRecord.SeqRecord(seqs[s[0]].seq[s[1]:s[2]+1].reverse_complement(), 
 SeqIO.write(gseqsF+gseqsR, 'gene_seqs.fa', 'fasta')
 print('finalizado.')
 EOF
-python3 script.py 1> _3.4_genes.extract.log 2> _3.4_genes.extract.err
+python3 script.py 1> _3.5_genes.extract.log 2> _3.5_genes.extract.err
 rm script.py
-echo '[3.5  ] indexando sequencia de genes para gerar o BED ...'
-hisat2-build gene_seqs.fa idxgenes 1> _3.5_genes.index.log 2> _3.5_genes.index.err
+echo '[3.6  ] indexando sequencia de genes para gerar o BED ...'
+hisat2-build gene_seqs.fa idxgenes 1> _3.6_genes.index.log 2> _3.6_genes.index.err
 
-echo '[3.6  ] indexando os transcritos para quantificar ...'
-salmon index -t cds.$tid.fa --index idx$tid 1> _3.6_transcripts.index.log 2> _3.6_transcripts.index.err
+echo '[3.7  ] indexando os transcritos para quantificar ...'
+salmon index -t cds.$tid.fa --index idx$tid 1> _3.7_transcripts.index.log 2> _3.7_transcripts.index.err
 
 salvar () {
     rm logs -rf && mkdir logs
@@ -237,32 +239,40 @@ for x in $@
             fi
             rm $SAMPLE.maped.sam
             echo "Mapeamento no genoma: $(grep 'overall' _4.$i.4_genomap.$SAMPLE.err)" >> resumo.txt
+            
+            echo "[4.$i.5] mapeando $SAMPLE  na CDS com hisat2..."
+            if [[ $(ls -lh | grep -c _[12].fastq) > 1 ]]
+                then
+                    hisat2 -x idxcds.$tid -1 $SAMPLE.F.fq -2 $SAMPLE.R.fq --no-unal -S $SAMPLE.maped.sam 1> _4.$i.5_cdsmap.$SAMPLE.log 2> _4.$i.5_cdsmap.$SAMPLE.err
+                else
+                    hisat2 -x idxcds.$tid -U $SAMPLE.fq --no-unal -S $SAMPLE.maped.sam 1> _4.$i.5_cdsmap.$SAMPLE.log 2> _4.$i.5_cdsmap.$SAMPLE.err
+            fi
+            rm $SAMPLE.maped.sam
+            echo "Mapeamento na CDS: $(grep 'overall' _4.$i.5_cdsmap.$SAMPLE.err)" >> resumo.txt
 
-            echo "[4.$i.5] quantificando com a amostra $SAMPLE com salmon ..."
+            echo "[4.$i.6] quantificando com a amostra $SAMPLE com salmon ..."
             if [[ $(ls -lh | grep -c _[12].fastq) > 1 ]]
                 then
                     salmon quant -1 $SAMPLE.F.fq -2 $SAMPLE.R.fq \
-            -o quant_$SAMPLE --libType IU --index idx$tid 1> _4.$i.5_quant.$SAMPLE.log 2> _4.$i.5_quant.$SAMPLE.err
+            -o quant_$SAMPLE --libType IU --index idx$tid 1> _4.$i.6_quant.$SAMPLE.log 2> _4.$i.6_quant.$SAMPLE.err
                 else
                     salmon quant -r $SAMPLE.fq \
-            -o quant_$SAMPLE --libType IU --index idx$tid 1> _4.$i.5_quant.$SAMPLE.log 2> _4.$i.5_quant.$SAMPLE.err
+            -o quant_$SAMPLE --libType IU --index idx$tid 1> _4.$i.6_quant.$SAMPLE.log 2> _4.$i.6_quant.$SAMPLE.err
             fi
             echo "CDS expressa em $SAMPLE: $(cut -f4 quant_$SAMPLE/quant.sf | tail -n+2 | grep -cv  '^0$')" >> resumo.txt
 
-            echo "[4.$i.6] mapeando com a amostra $SAMPLE com hisat2 ..."
+            echo "[4.$i.7] mapeando com a amostra $SAMPLE com hisat2 ..."
             if [[ $(ls -lh | grep -c _[12].fastq) > 1 ]]
                 then
-                    hisat2 -x idxgenes -1 $SAMPLE.F.fq -2 $SAMPLE.R.fq --no-unal -S $SAMPLE.maped.sam  1> _4.$i.6_map.$SAMPLE.log 2> _4.$i.6_map.$SAMPLE.err
+                    hisat2 -x idxgenes -1 $SAMPLE.F.fq -2 $SAMPLE.R.fq --no-unal -S $SAMPLE.maped.sam  1> _4.$i.7_map.$SAMPLE.log 2> _4.$i.7_map.$SAMPLE.err
                 else
-                    hisat2 -x idxgenes -U $SAMPLE.fq --no-unal -S $SAMPLE.maped.sam  1> _4.$i.6_map.$SAMPLE.log 2> _4.$i.6_map.$SAMPLE.err
+                    hisat2 -x idxgenes -U $SAMPLE.fq --no-unal -S $SAMPLE.maped.sam  1> _4.$i.7_map.$SAMPLE.log 2> _4.$i.7_map.$SAMPLE.err
             fi
-            echo "Mapeamento na CDS: $(grep 'overall' _4.$i.6_map.$SAMPLE.err)" >> resumo.txt
+            echo "Mapeamento na CDS: $(grep 'overall' _4.$i.7_map.$SAMPLE.err)" >> resumo.txt
             
-            echo "[4.$i.7] transformando sam em bam ordenado do $SAMPLE com samtools ..."
-            samtools view -S -b $SAMPLE.maped.sam > $SAMPLE.maped.bam  2> _4.$i.7_bam.$SAMPLE.err
-            bamtools sort -in $SAMPLE.maped.bam -out $SAMPLE.sorted.bam  1> _4.$i.7_bam.$SAMPLE.log 2>> _4.$i.7_bam.$SAMPLE.err
-
             echo "[4.$i.8] gerando arquivo de cobertura para a amostra $SAMPLE com deeptools ..."
+            samtools view -S -b $SAMPLE.maped.sam > $SAMPLE.maped.bam  2> _4.$i.8_bam.$SAMPLE.err
+            bamtools sort -in $SAMPLE.maped.bam -out $SAMPLE.sorted.bam  1> _4.$i.8_bam.$SAMPLE.log 2>> _4.$i.8_bam.$SAMPLE.err
             bamCoverage -b $SAMPLE.sorted.bam -o $SAMPLE.bed --outFileFormat bedgraph --binSize 3 -p 2 -r $GENE 1> _4.$i.8_cov.$SAMPLE.log 2> _4.$i.8_cov.$SAMPLE.err
 
             echo "[4.$i.9] limpando dados de $SAMPLE ..."
