@@ -20,6 +20,7 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
+N_ARGS=$#
 if [ $N_ARGS -lt 5 ]
 then
  echo "Usage:  $> bash ncbi_salmon_quant.sh http://...genoma.gz http://...gtf.gz http://...cds.gz  dir_temp/   SRA_RUN1,AMOSTRA1 ... ... SRA_RUNn,AMOSTRAn"
