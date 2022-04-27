@@ -292,12 +292,12 @@ done
 echo "[5    ] $( date +%D.%H:%M:%S) executando o multiqc ..."
 multiqc out_*/qc_* 1> _5_multiqc.log 2> _5_multiqc.err
 rm logs -rf && mkdir logs
-cp *.log *.err logs
+cp *.log *.err resumo.txt logs
 zip -r logs.zip logs/** 1>/dev/null 2>/dev/null
 cp logs.zip multiqc_*.html $TEMP_DIR
 
 echo "[6    ] $( date +%D.%H:%M:%S) compactando para RESULTS.zip ..."
 zip -r RESULTS.zip out_*/**  multiqc_*.html *.log *.err 1>/dev/null 2>/dev/null
-cp RESULTS.zip ../ && cd ..
+cp RESULTS.zip ../ && cp RESULTS.zip $TEMP_DIR && cd ..
 
 echo $( date +%D.%H:%M:%S) terminado.
