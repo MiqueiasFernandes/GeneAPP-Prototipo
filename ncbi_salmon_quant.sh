@@ -126,7 +126,7 @@ open(cds, 'w').writelines(as_cds)
 EOF
 python3 script.py 1> _3.4_transcripts.filter.log 2> _3.4_transcripts.filter.err
 rm script.py
-echo "Genes com AS anotado: $(grep 'genes com AS' _3.3_transcripts.filter.log | head -1 | cut -d\  -f1)"  >> resumo.txt
+echo "Genes com AS anotado: $(grep 'genes com AS' _3.4_transcripts.filter.log | head -1 | cut -d\  -f1)"  >> resumo.txt
 echo "CDS de genes com AS anotado: $(grep -c \>  cds.$tid.fa)"  >> resumo.txt
 echo "Tamanho total da CDS de genes com AS: $(grep -v \>  cds.$tid.fa | tr -d '\n' | wc -c | rev | cut -c7- | rev)Mpb"  >> resumo.txt
 
