@@ -144,12 +144,16 @@ for k, v in conts.items():
 print(len(ok), 'CDS de genes com AS')
 k=False
 as_cds = []
+genetrn = []
 for l in open(cds).readlines():
   if l.startswith('>'):
     k = l.strip() in ok
+    if k:
+      genetrn.append(f"{l[1:].split()[0]},{l.split('gene=')[1].split(']')[0].strip()}\n")
   if k:
     as_cds.append(l)
 open(cds, 'w').writelines(as_cds)
+open('transcript_gene_mapping.csv', 'w').writelines(genetrn)
 EOF
 python3 script.py 1> _3.4_transcripts.filter.log 2> _3.4_transcripts.filter.err
 rm script.py
@@ -323,8 +327,19 @@ cp *.log *.err resumo.txt logs
 zip -r logs.zip logs/** 1>/dev/null 2>/dev/null
 cp logs.zip multiqc_*.html $TEMP_DIR
 
-echo "[6    ] $( date +%D.%H:%M:%S) compactando para RESULTS.zip ..."
-zip -r RESULTS.zip out_*/**  multiqc_*.html *.log *.err 1>/dev/null 2>/dev/null
-cp RESULTS.zip ../ && cp RESULTS.zip $TEMP_DIR && cd ..
+echo "[6    ] $( date +%D.%H:%M:%S) preparando output para o 3D-RNAseq ..."
+mkdir to3d
+for o in out_*
+do 
+    x=`echo $o|cut -c5-`
+    mkdir to3d/$x
+    cp $o/*.quant.sf to3d/$x/quant.sf
+done
+cd to3d && zip -r to3d.zip * 1>/dev/null 2>/dev/null && mv to3d.zip ../ && cd ..
 
+echo "[7    ] $( date +%D.%H:%M:%S) compactando para RESULTS.zip ..."
+zip -r RESULTS.zip out_*/** to3d.zip transcript_gene_mapping.csv multiqc_*.html *.log *.err 1>/dev/null 2>/dev/null
+cp RESULTS.zip ../ && cp RESULTS.zip $TEMP_DIR
+
+cd ..
 echo $( date +%D.%H:%M:%S) terminado.
