@@ -212,6 +212,7 @@ restaurar () {
 
 echo "[4    ] $( date +%D.%H:%M:%S) quantificando amostras ..."
 GENE=$(grep \> gene_seqs.fa | head -1000 | tail | head -1 | tr -d \> | cut -d\   -f1)
+echo "RUN,SAMPLE,FACTOR,REPLICATE" > experimental_design.csv
 i=1
 for x in $@
     do 
@@ -219,6 +220,9 @@ for x in $@
         then
             RUN=`echo $x | cut -d, -f1`
             SAMPLE=`echo $x | cut -d, -f2`
+            FACTOR=`echo $x | cut -d, -f3`
+            REPLICATE=`echo $x | cut -d, -f4`
+            echo "$RUN,$SAMPLE,$FACTOR,$REPLICATE" >> experimental_design.csv
 
             if restaurar $SAMPLE
                 then 
@@ -338,7 +342,7 @@ done
 cd to3d && zip -r to3d.zip * 1>/dev/null 2>/dev/null && mv to3d.zip ../ && cd ..
 
 echo "[7    ] $( date +%D.%H:%M:%S) compactando para RESULTS.zip ..."
-zip -r RESULTS.zip out_*/** to3d.zip transcript_gene_mapping.csv multiqc_*.html *.log *.err 1>/dev/null 2>/dev/null
+zip -r RESULTS.zip out_*/** to3d.zip transcript_gene_mapping.csv experimental_design.csv multiqc_*.html *.log *.err 1>/dev/null 2>/dev/null
 cp RESULTS.zip ../ && cp RESULTS.zip $TEMP_DIR
 
 cd ..
