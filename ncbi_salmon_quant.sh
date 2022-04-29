@@ -23,7 +23,7 @@
 N_ARGS=$#
 if [ $N_ARGS -lt 5 ]
 then
- echo "Usage:  $> bash ncbi_salmon_quant.sh http://...genoma.gz http://...gtf.gz http://...cds.gz  dir_temp/   RUN,SAMPLE,FACTOR,REPLICATE ... ... RUNn,SAMPLEn,FACTORn,REPLICATEn"
+ echo "Usage:  $> bash ncbi_salmon_quant.sh http://...genoma.gz http://...gtf.gz http://...cds.gz dir_temp/ RUN,SAMPLE,FACTOR ... ... RUNn,SAMPLEn,FACTORn"
  exit 1
 fi
 
@@ -212,7 +212,7 @@ restaurar () {
 
 echo "[4    ] $( date +%D.%H:%M:%S) quantificando amostras ..."
 GENE=$(grep \> gene_seqs.fa | head -1000 | tail | head -1 | tr -d \> | cut -d\   -f1)
-echo "RUN,SAMPLE,FACTOR,REPLICATE" > experimental_design.csv
+echo "RUN,SAMPLE,FACTOR,FOLDER" > experimental_design.csv
 i=1
 for x in $@
     do 
@@ -221,8 +221,8 @@ for x in $@
             RUN=`echo $x | cut -d, -f1`
             SAMPLE=`echo $x | cut -d, -f2`
             FACTOR=`echo $x | cut -d, -f3`
-            REPLICATE=`echo $x | cut -d, -f4`
-            echo "$RUN,$SAMPLE,$FACTOR,$REPLICATE" >> experimental_design.csv
+            
+            echo "$RUN,$SAMPLE,$FACTOR,$SAMPLE" >> experimental_design.csv
 
             if restaurar $SAMPLE
                 then 
