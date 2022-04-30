@@ -31,8 +31,8 @@ EMAIL=$(echo $1 | sed s/@/%40/)
 OUT_PRE=$2
 OUT_3D=$3
 PTNAS=$4
-GFF=$4
-TMP=$5
+GFF=$5
+TMP=$6
 
 preparar () {
     echo "preparando ..."
