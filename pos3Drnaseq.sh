@@ -123,7 +123,7 @@ cobertura () {
     while read g
     do 
         for SAMPLE in `cut -d, -f2 experimental_design.csv | tail +2`
-        then
+        do
             if [ ! -f ../$TMP/beds/$g.$SAMPLE.bed ]
             then
                 bamCoverage -b outpre/out_$SAMPLE.sorted.bam -o ../$TMP/beds/$g.$SAMPLE.bed --outFileFormat bedgraph --binSize 3 -p 2 -r $g 
