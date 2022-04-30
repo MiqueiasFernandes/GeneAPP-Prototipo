@@ -40,7 +40,7 @@ preparar () {
     echo "preparando ..."
     apt install curl wget 1>/dev/null 2>/dev/null
     pip install biopython 1>/dev/null 2>/dev/null
-    if ! -d $TMP ; then mkdir $TMP && echo "diretorio criado: $TMP" ; fi
+    if [ ! -d $TMP ] ; then mkdir $TMP && echo "diretorio criado: $TMP" ; fi
 }
 
 importar() {
@@ -73,7 +73,7 @@ EOF
 
 anotar () {
     echo "anotando ..."
-    if ! -d $TMP/anotacoes ; then mkdir $TMP/anotacoes ; fi
+    if [ ! -d $TMP/anotacoes ] ; then mkdir $TMP/anotacoes ; fi
     ## https://www.ebi.ac.uk/Tools/common/tools/help/index.html?tool=iprscan5
     API='https://www.ebi.ac.uk/Tools/services/rest/iprscan5/'
     Q='goterms=true&pathways=true&appl=PfamA'
