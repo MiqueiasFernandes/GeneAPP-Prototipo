@@ -21,7 +21,7 @@
 #  THE SOFTWARE.
 
 N_ARGS=$#
-if [ $N_ARGS -lt 4 ]
+if [ $N_ARGS -lt 6 ]
 then
  echo "Usage:  $> bash pos3Drnaseq.sh      seu@email    pre_results.zip   3Drnaseq_out.zip  http://...ptnas.faa.gz   http://...genome.gff3.gz temp_dir"
  exit 1
@@ -73,7 +73,7 @@ EOF
 
 anotar () {
     echo "anotando ..."
-    if [ ! -d $TMP/anotacoes ] ; then mkdir $TMP/anotacoes ; fi
+    if [ ! -d ../$TMP/anotacoes ] ; then mkdir ../$TMP/anotacoes ; fi
     ## https://www.ebi.ac.uk/Tools/common/tools/help/index.html?tool=iprscan5
     API='https://www.ebi.ac.uk/Tools/services/rest/iprscan5/'
     Q='goterms=true&pathways=true&appl=PfamA'
@@ -83,7 +83,7 @@ anotar () {
     do 
         ID=$(echo $l | cut -d, -f1)
         SEQ=$(echo $l | cut -d, -f2)
-        if ! -f $TMP/anotacoes/$ID.tsv
+        if [ ! -f ../$TMP/anotacoes/$ID.tsv ]
         then
             JOB=$(curl -sSX POST --header 'Content-Type: application/x-www-form-urlencoded' --header 'Accept: text/plain' -d "email=$EMAIL&$Q&sequence=$SEQ" $API/run)
             echo "[$k de $TT em $( date +%D.%H:%M:%S)] rodando $ID pelo job $JOB ..."
@@ -93,7 +93,7 @@ anotar () {
             do
                 if grep FINISHED <(curl -sSX GET --header 'Accept: text/plain' "$API/status/$JOB") >/dev/null
                 then 
-                    curl -sSX GET --header 'Accept: text/tab-separated-values' "$API/result/$JOB/tsv" > $TMP/anotacoes/$ID.tsv
+                    curl -sSX GET --header 'Accept: text/tab-separated-values' "$API/result/$JOB/tsv" > ../$TMP/anotacoes/$ID.tsv
                     break
                 else sleep 1m
                 fi
@@ -101,7 +101,7 @@ anotar () {
         fi
         (( k=k+1 ))
     done < ptna_seq 
-    cp -r $TMP/anotacoes .
+    cp -r ../$TMP/anotacoes .
 }
 
 main () {
