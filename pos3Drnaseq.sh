@@ -59,13 +59,13 @@ importar() {
     echo "das_ptnas = 'das_ptnas'" >> script.py
     echo "ptnas = 'ptnas.faa'" >> script.py
     cat >> script.py << EOF
-    from Bio import SeqIO, Seq, SeqRecord
-    pts = set([x.strip().split(',')[2] for x in open(das_ptnas).readlines()])
-    ss= [s for s in SeqIO.parse(ptnas, 'fasta') if s.id in pts]
-    ptna_name = [f"{x.id} {x.description.replace(x.id, '').strip()}\n" for x in ss]
-    ptna_seq = [f'{x.id},{str(x.seq)}\n' for x in ss]
-    open('ptna_name', 'w').writelines(ptna_name)
-    open('ptna_seq', 'w').writelines(ptna_seq)
+from Bio import SeqIO, Seq, SeqRecord
+pts = set([x.strip().split(',')[2] for x in open(das_ptnas).readlines()])
+ss= [s for s in SeqIO.parse(ptnas, 'fasta') if s.id in pts]
+ptna_name = [f"{x.id} {x.description.replace(x.id, '').strip()}\n" for x in ss]
+ptna_seq = [f'{x.id},{str(x.seq)}\n' for x in ss]
+open('ptna_name', 'w').writelines(ptna_name)
+open('ptna_seq', 'w').writelines(ptna_seq)
 EOF
     python3 script.py 
         wget -qO genes.gff3.gz $GFF && gunzip genes.gff3.gz
