@@ -55,8 +55,7 @@ importar() {
     paste -d',' das_transcripts <(sed 's/.*cds_//' das_transcripts | cut -d_ -f-2)| tr -s , , > das_ptnas
     wget -qO ptnas.faa.gz $PTNAS && gunzip ptnas.faa.gz
 
-
-    echo "das_ptnas = 'das_ptnas'" >> script.py
+    echo "das_ptnas = 'das_ptnas'" > script.py
     echo "ptnas = 'ptnas.faa'" >> script.py
     cat >> script.py << EOF
 from Bio import SeqIO, Seq, SeqRecord
