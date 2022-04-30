@@ -39,7 +39,17 @@ TIMEOUT=60
 preparar () {
     echo "preparando ..."
     apt install curl wget 1>/dev/null 2>/dev/null
-    pip install biopython 1>/dev/null 2>/dev/null
+    pip install biopython deeptools 1>/dev/null 2>/dev/null
+    if ! grep 'pysam.index(bamFile)' /usr/local/lib/python3.7/dist-packages/deeptools/bamHandler.py 1>/dev/null 2>/dev/null
+    then
+        cp /usr/local/lib/python3.7/dist-packages/deeptools/bamHandler.py .
+        cp bamHandler.py /usr/local/lib/python3.7/dist-packages/deeptools/bamHandler.py.old
+        grep -B100000 'bam = pysam.Samfile(bamFile' bamHandler.py | grep -v 'bam = pysam.Samfile(bamFile' > xtemp
+        echo '        pysam.index(bamFile)' >> xtemp
+        tail bamHandler.py -n+`grep -n 'bam = pysam.Samfile(bamFile' bamHandler.py | cut -d: -f1` >> xtemp
+        cp xtemp /usr/local/lib/python3.7/dist-packages/deeptools/bamHandler.py
+        rm xtemp bamHandler.py
+    fi
     if [ ! -d $TMP ] ; then mkdir $TMP && echo "diretorio criado: $TMP" ; fi
 }
 
@@ -106,10 +116,29 @@ anotar () {
     cp -r ../$TMP/anotacoes .
 }
 
+cobertura () {
+    if [ ! -d ../$TMP/beds ] ; then mkdir ../$TMP/beds ; fi
+    k=1
+    TT="$(( $(tail +2 outpre/experimental_design.csv | grep -c , )  * $(grep -vc '^$' das_genes) ))"
+    while read g
+    do 
+        for SAMPLE in `cut -d, -f2 experimental_design.csv | tail +2`
+        then
+            if [ ! -f ../$TMP/beds/$g.$SAMPLE.bed ]
+            then
+                bamCoverage -b outpre/out_$SAMPLE.sorted.bam -o ../$TMP/beds/$g.$SAMPLE.bed --outFileFormat bedgraph --binSize 3 -p 2 -r $g 
+            fi 
+            echo "[$k de $TT] $g / $SAMPLE  OK ..."
+            (( k=k+1 ))
+        done
+    done < das_genes 
+}
+
 main () {
     preparar
     importar
-    anotar
+    anotar & cobertura &
+    wait
 }
 
 main $@
