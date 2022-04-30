@@ -131,7 +131,7 @@ cobertura () {
             echo "[$k de $TT] $g / $SAMPLE  OK ..."
             (( k=k+1 ))
         done
-    done < das_genes 
+    done <(cut -d, -f2 das_transcripts | uniq) 
 }
 
 main () {
