@@ -68,6 +68,7 @@ open('ptna_name', 'w').writelines(ptna_name)
 open('ptna_seq', 'w').writelines(ptna_seq)
 EOF
     python3 script.py 
+    rm script.py
     wget -qO genes.gff3.gz $GFF && gunzip genes.gff3.gz
 }
 
