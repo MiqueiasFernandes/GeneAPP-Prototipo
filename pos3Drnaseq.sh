@@ -23,26 +23,32 @@
 N_ARGS=$#
 if [ $N_ARGS -lt 4 ]
 then
- echo "Usage:  $> bash pos3Drnaseq.sh      seu@email    pre_results.zip   3Drnaseq_out.zip   temp_dir"
+ echo "Usage:  $> bash pos3Drnaseq.sh      seu@email    pre_results.zip   3Drnaseq_out.zip  http://...ptnas.faa.gz temp_dir"
  exit 1
 fi
 
 EMAIL=$(echo $1 | sed s/@/%40/)
 OUT_PRE=$2
 OUT_3D=$3
-TMP=$4
+PTNAS=$4
+TMP=$5
 
 preparar () {
     echo "preparando ..."
-    apt install curl wget
+    apt install curl wget 1>/dev/null 2>/dev/null
+    echo "email: $EMAIL"
+    echo "tmp: $TMP"
 }
 
 importar() {
     echo "importando ..."
     rm tmp tmp_dir -rf && mkdir tmp_dir
     cp $OUT_3D tmp_dir/out3d.zip
-    unzip tmp_dir/out3d.zip >/dev/null && cd tmp && mv file* out3d && mv out3d ../tmp_dir && cd .. && rm tmp -r 
-    cut -d, -f1 tmp_dir/out3d/result/Significant\ DAS\ genes\ list\ and\ statistics.csv | tail +2 | uniq > das_genes
+    unzip tmp_dir/out3d.zip >/dev/null && cd tmp && mv file* out3d && mv out3d ../tmp_dir && cd .. && rm tmp -r && cd tmp_dir
+    cut -d, -f1 out3d/result/Significant\ DAS\ genes\ list\ and\ statistics.csv | tail +2 | uniq > das_genes
+    echo "DAS genes: $(wc -l das_genes)"
+    mkdir outpre && cd outpre && unzip ../../$OUT_PRE 1>/dev/null && cd ../
+    wget -qO ptnas.faa.gz $PTNAS && gunzip ptnas.faa.gz
 }
 
 anotar () {
