@@ -23,7 +23,7 @@
 N_ARGS=$#
 if [ $N_ARGS -lt 4 ]
 then
- echo "Usage:  $> bash pos3Drnaseq.sh      seu@email    pre_results.zip   3Drnaseq_out.zip  http://...ptnas.faa.gz temp_dir"
+ echo "Usage:  $> bash pos3Drnaseq.sh      seu@email    pre_results.zip   3Drnaseq_out.zip  http://...ptnas.faa.gz   http://...genome.gff3.gz temp_dir"
  exit 1
 fi
 
@@ -31,6 +31,7 @@ EMAIL=$(echo $1 | sed s/@/%40/)
 OUT_PRE=$2
 OUT_3D=$3
 PTNAS=$4
+GFF=$4
 TMP=$5
 
 preparar () {
@@ -48,7 +49,10 @@ importar() {
     cut -d, -f1 out3d/result/Significant\ DAS\ genes\ list\ and\ statistics.csv | tail +2 | uniq > das_genes
     echo "DAS genes: $(wc -l das_genes)"
     mkdir outpre && cd outpre && unzip ../../$OUT_PRE 1>/dev/null && cd ../
+    grep -f <(cut -d, -f2 das_genes | tr -d \" | awk '{print ","$0","}') <(sed s/$/,/ outpre/transcript_gene_mapping.csv) > das_transcripts
+    echo "DAS transcripts: $(wc -l das_transcripts)"
     wget -qO ptnas.faa.gz $PTNAS && gunzip ptnas.faa.gz
+    wget -qO genes.gff3.gz $GFF && gunzip genes.gff3.gz
 }
 
 anotar () {
