@@ -122,7 +122,7 @@ cobertura () {
     TT="$(( $(tail +2 outpre/experimental_design.csv | grep -c , )  * $(grep -vc '^$' das_genes) ))"
     while read g
     do 
-        for SAMPLE in `cut -d, -f2 experimental_design.csv | tail +2`
+        for SAMPLE in `cut -d, -f2 outpre/experimental_design.csv | tail +2`
         do
             if [ ! -f ../$TMP/beds/$g.$SAMPLE.bed ]
             then
