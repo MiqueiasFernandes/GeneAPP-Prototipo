@@ -27,6 +27,7 @@ then
  exit 1
 fi
 
+export TZ=America/Sao_Paulo
 EMAIL=$(echo $1 | sed s/@/%40/)
 OUT_PRE=$2
 OUT_3D=$3
@@ -40,6 +41,7 @@ preparar () {
     apt install curl wget 1>/dev/null 2>/dev/null
     pip install biopython 1>/dev/null 2>/dev/null
     echo "email: $EMAIL"
+    if ! -d $TMP ; then mkdir $TMP ; fi
     echo "tmp: $TMP"
 }
 
@@ -68,32 +70,40 @@ open('ptna_name', 'w').writelines(ptna_name)
 open('ptna_seq', 'w').writelines(ptna_seq)
 EOF
     python3 script.py 
-        wget -qO genes.gff3.gz $GFF && gunzip genes.gff3.gz
+    wget -qO genes.gff3.gz $GFF && gunzip genes.gff3.gz
 }
 
 anotar () {
     echo "anotando ..."
+    if ! -d $TMP/anotacoes ; then mkdir $TMP/anotacoes ; fi
     ## https://www.ebi.ac.uk/Tools/common/tools/help/index.html?tool=iprscan5
     API='https://www.ebi.ac.uk/Tools/services/rest/iprscan5/'
+    Q='goterms=true&pathways=true&appl=PfamA'
+    k=1
+    TT=$(grep -c , ptna_seq)
     while read l
     do 
         ID=$(echo $l | cut -d, -f1)
         SEQ=$(echo $l | cut -d, -f2)
-        JOB=$(curl -sSX POST --header 'Content-Type: application/x-www-form-urlencoded' --header 'Accept: text/plain' -d "email=$EMAIL&goterms=true&pathways=true&appl=PfamA&sequence=$SEQ" $API/run)
-        echo rodando $ID pelo job $JOB ...
-        sleep 30s
+        if ! -f $TMP/anotacoes/$ID.tsv
+        then
+            JOB=$(curl -sSX POST --header 'Content-Type: application/x-www-form-urlencoded' --header 'Accept: text/plain' -d "email=$EMAIL&$Q&sequence=$SEQ" $API/run)
+            echo "[$k de $TT em $( date +%D.%H:%M:%S)] rodando $ID pelo job $JOB ..."
+            sleep 30s
 
-        for i in $(seq $TIMEOUT)
-        do
-            if grep FINISHED <(curl -sSX GET --header 'Accept: text/plain' "$API/status/$JOB") >/dev/null
-            then 
-                curl -sSX GET --header 'Accept: text/tab-separated-values' "$API/result/$JOB/tsv" > $ID.tsv
-                break
-            else sleep 1m
-            fi
-        done
-
+            for i in $(seq $TIMEOUT)
+            do
+                if grep FINISHED <(curl -sSX GET --header 'Accept: text/plain' "$API/status/$JOB") >/dev/null
+                then 
+                    curl -sSX GET --header 'Accept: text/tab-separated-values' "$API/result/$JOB/tsv" > $TMP/anotacoes/$ID.tsv
+                    break
+                else sleep 1m
+                fi
+            done
+        fi
+        (( k=k+1 ))
     done < ptna_seq 
+    cp -r $TMP/anotacoes .
 }
 
 main () {
