@@ -79,6 +79,7 @@ open('ptna_seq', 'w').writelines(ptna_seq)
 EOF
     python3 script.py 
     rm script.py
+    cut -d, -f2 das_transcripts | uniq > das_genes
     wget -qO genes.gff3.gz $GFF && gunzip genes.gff3.gz
 }
 
@@ -131,8 +132,7 @@ cobertura () {
             echo "[$k de $TT] $g / $SAMPLE  OK ..."
             (( k=k+1 ))
         done
-    done <(cut -d, -f2 das_transcripts | uniq) 
-}
+    done < das_genes
 
 main () {
     preparar
