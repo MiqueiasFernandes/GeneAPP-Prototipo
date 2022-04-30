@@ -33,6 +33,7 @@ OUT_3D=$3
 PTNAS=$4
 GFF=$5
 TMP=$6
+TIMEOUT=60
 
 preparar () {
     echo "preparando ..."
@@ -74,16 +75,31 @@ anotar () {
     echo "anotando ..."
     ## https://www.ebi.ac.uk/Tools/common/tools/help/index.html?tool=iprscan5
     API='https://www.ebi.ac.uk/Tools/services/rest/iprscan5/'
-    SEQ=$(echo $1 | tr "[:lower:]" "[:upper:]" | tr -cd "[:alpha:]")
-    JOB=$(curl -X POST --header 'Content-Type: application/x-www-form-urlencoded' --header 'Accept: text/plain' -d "email=$EMAIL&sequence=$SEQ" $API/run 1> log 2> err)
-    echo rodando o job $JOB ...
-    ## status: curl -X GET --header 'Accept: text/plain' 'https://www.ebi.ac.uk/Tools/services/rest/iprscan5/status/iprscan5-R20220430-195319-0285-44991048-p1m'
-    ## result: !curl -X GET --header 'Accept: text/tab-separated-values' 'https://www.ebi.ac.uk/Tools/services/rest/iprscan5/result/iprscan5-R20220430-195319-0285-44991048-p1m/tsv'
+    while read l
+    do 
+        ID=$(echo $l | cut -d, -f1)
+        SEQ=$(echo $l | cut -d, -f2)
+        JOB=$(curl -sSX POST --header 'Content-Type: application/x-www-form-urlencoded' --header 'Accept: text/plain' -d "email=$EMAIL&goterms=true&pathways=true&appl=PfamA&sequence=$SEQ" $API/run)
+        echo rodando $ID pelo job $JOB ...
+        sleep 30s
+
+        for i in $(seq $TIMEOUT)
+        do
+            if grep FINISHED <(curl -sSX GET --header 'Accept: text/plain' "$API/status/$JOB") >/dev/null
+            then 
+                curl -sSX GET --header 'Accept: text/tab-separated-values' "$API/result/$JOB/tsv" > $ID.tsv
+                break
+            else sleep 1m
+            fi
+        done
+
+    done < ptna_seq 
 }
 
 main () {
     preparar
     importar
+    anotar
 }
 
 main $@
