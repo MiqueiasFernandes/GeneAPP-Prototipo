@@ -99,6 +99,7 @@ anotar () {
                 else sleep 1m
                 fi
             done
+        else echo "[$k de $TT] $ID restaurado de $TMP/anotacoes ..."
         fi
         (( k=k+1 ))
     done < ptna_seq 
