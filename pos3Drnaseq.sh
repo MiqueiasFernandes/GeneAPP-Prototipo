@@ -40,9 +40,7 @@ preparar () {
     echo "preparando ..."
     apt install curl wget 1>/dev/null 2>/dev/null
     pip install biopython 1>/dev/null 2>/dev/null
-    echo "email: $EMAIL"
-    if ! -d $TMP ; then mkdir $TMP ; fi
-    echo "tmp: $TMP"
+    if ! -d $TMP ; then mkdir $TMP && echo "diretorio criado: $TMP" ; fi
 }
 
 importar() {
