@@ -37,6 +37,7 @@ TMP=$6
 preparar () {
     echo "preparando ..."
     apt install curl wget 1>/dev/null 2>/dev/null
+    pip install biopython 1>/dev/null 2>/dev/null
     echo "email: $EMAIL"
     echo "tmp: $TMP"
 }
@@ -51,8 +52,23 @@ importar() {
     mkdir outpre && cd outpre && unzip ../../$OUT_PRE 1>/dev/null && cd ../
     grep -f <(cut -d, -f2 das_genes | tr -d \" | awk '{print ","$0","}') <(sed s/$/,/ outpre/transcript_gene_mapping.csv) > das_transcripts
     echo "DAS transcripts: $(wc -l das_transcripts)"
+    paste -d',' das_transcripts <(sed 's/.*cds_//' das_transcripts | cut -d_ -f-2)| tr -s , , > das_ptnas
     wget -qO ptnas.faa.gz $PTNAS && gunzip ptnas.faa.gz
-    wget -qO genes.gff3.gz $GFF && gunzip genes.gff3.gz
+
+
+    echo "das_ptnas = 'das_ptnas'" >> script.py
+    echo "ptnas = 'ptnas.faa'" >> script.py
+    cat >> script.py << EOF
+    from Bio import SeqIO, Seq, SeqRecord
+    pts = set([x.strip().split(',')[2] for x in open(das_ptnas).readlines()])
+    ss= [s for s in SeqIO.parse(ptnas, 'fasta') if s.id in pts]
+    ptna_name = [f"{x.id} {x.description.replace(x.id, '').strip()}\n" for x in ss]
+    ptna_seq = [f'{x.id},{str(x.seq)}\n' for x in ss]
+    open('ptna_name', 'w').writelines(ptna_name)
+    open('ptna_seq', 'w').writelines(ptna_seq)
+EOF
+    python3 script.py 
+        wget -qO genes.gff3.gz $GFF && gunzip genes.gff3.gz
 }
 
 anotar () {
