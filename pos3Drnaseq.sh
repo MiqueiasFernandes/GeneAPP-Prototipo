@@ -127,7 +127,7 @@ cobertura () {
         do
             if [ ! -f ../$TMP/beds/$g.$SAMPLE.bed ]
             then
-                bamCoverage -b outpre/out_$SAMPLE/$SAMPLE.sorted.bam -o ../$TMP/beds/$g.$SAMPLE.bed --outFileFormat bedgraph --binSize 3 -p 2 -r $g 
+                bamCoverage -b outpre/out_$SAMPLE/$SAMPLE.sorted.bam -o ../$TMP/beds/$g.$SAMPLE.bed --outFileFormat bedgraph --binSize 3 -p 2 -r $g 1>/dev/null 2>> deeptools.err
             fi 
             echo "[$k de $TT] $g / $SAMPLE  OK ..."
             (( k=k+1 ))
