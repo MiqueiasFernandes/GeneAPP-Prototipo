@@ -133,6 +133,7 @@ cobertura () {
             (( k=k+1 ))
         done
     done < das_genes
+    cp -r ../$TMP/beds .
 }
 
 main () {
