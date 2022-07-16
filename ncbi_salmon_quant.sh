@@ -360,7 +360,8 @@ zip -r logs.zip logs/** 1>/dev/null 2>/dev/null
 cp logs.zip multiqc_*.html $TEMP_DIR
 
 echo "[6    ] $( date +%D.%H:%M:%S) preparando output para o 3D-RNAseq ..."
-mkdir to3d
+mkdir to3d 
+cp transcript_gene_mapping.csv experimental_design.csv to3d/
 for o in out_*
 do 
     x=`echo $o|cut -c5-`
@@ -370,7 +371,7 @@ done
 cd to3d && zip -r to3d.zip * 1>/dev/null 2>/dev/null && mv to3d.zip ../ && cd ..
 
 echo "[7    ] $( date +%D.%H:%M:%S) compactando para RESULTS.zip ..."
-zip -r RESULTS.zip out_*/** to3d.zip transcript_gene_mapping.csv experimental_design.csv multiqc_*.html *.log *.err 1>/dev/null 2>/dev/null
+zip -r RESULTS.zip out_*/** to3d.zip multiqc_*.html *.log *.err 1>/dev/null 2>/dev/null
 cp RESULTS.zip ../ && cp RESULTS.zip to3d.zip $TEMP_DIR
 
 cd ..
