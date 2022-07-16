@@ -247,6 +247,7 @@ for x in $@
             if restaurar $SAMPLE
                 then 
                     echo "[4.$i  ] $SAMPLE restaurado de $TEMP_DIR/ ..."
+                    (( i=i+1 ))
                     continue
                 else
                     echo "Rodando $RUN em $SAMPLE ..." >> resumo.txt
