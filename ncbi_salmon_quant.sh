@@ -39,6 +39,7 @@ if [ ! -d $TEMP_DIR ]
 fi
 TEMP_DIR="../$TEMP_DIR"
 cd results$tid
+echo "[0    ] ARGS:  $@"
 echo "[1    ] $( date +%D.%H:%M:%S) preparando o ambiente results$tid/ ..."
 p=1
 
@@ -59,7 +60,19 @@ for prog in sra-toolkit trimmomatic fastqc salmon samtools bamtools hisat2
     fi
 done
 
-echo "usando o salmon ! Versão: " > _1.0_pacotes.log && salmon -v 2>> _1.0_pacotes.log
+## instalar nova versao do sra
+## https://www.biostars.org/p/9527325/#9527333
+## https://github.com/ncbi/sra-tools/wiki/02.-Installing-SRA-Toolkit
+
+mkdir sranew && cd sranew
+wget -qO sratoolkit.tar.gz https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/current/sratoolkit.current-ubuntu64.tar.gz \
+ && tar -xzf sratoolkit.tar.gz >/dev/null \
+ && ln -s ./sratoolkit.*/bin/fastq-dump
+sratoolkit.*/bin/vdb-config -i --restore-defaults 1> vdb_config.log
+cd ../
+
+echo "usando o sra-toolkit NOVO ! Versão: $( sranew/fastq-dump --version )" >  _1.0_pacotes.log
+echo "usando o salmon ! Versão: " >> _1.0_pacotes.log && salmon -v 2>> _1.0_pacotes.log
 echo "usando o hisat2 ! Versão: $( hisat2 --version )" >>  _1.0_pacotes.log
 echo "usando o bamtools ! Versão: $( bamtools --version )" >>  _1.0_pacotes.log
 echo "usando o sra-toolkit ! Versão: $( fastq-dump --version )" >>  _1.0_pacotes.log
@@ -204,7 +217,14 @@ restaurar () {
         echo "tentando restaurar $TEMP_DIR/$1.zip" >> resumo.txt
         cp $TEMP_DIR/$1.zip .
         unzip $1.zip 1>/dev/null 2>/dev/null
-        return 0
+        if [ -f out_$1/$1.quant.sf ] 
+        then 
+          return 0 
+        else
+          rm out_$1/ -rf
+          echo "impossivel restaurar $1 ..." >> resumo.txt
+          return 1
+        fi
     else
         return 1
     fi
@@ -226,7 +246,7 @@ for x in $@
 
             if restaurar $SAMPLE
                 then 
-                    echo "$SAMPLE restaurado de $TEMP_DIR/ ..."
+                    echo "[4.$i  ] $SAMPLE restaurado de $TEMP_DIR/ ..."
                     continue
                 else
                     echo "Rodando $RUN em $SAMPLE ..." >> resumo.txt
@@ -234,6 +254,13 @@ for x in $@
 
             echo "[4.$i.1] $( date +%D.%H:%M:%S) obtendo a amostra $SAMPLE pelo acesso $RUN no sra ..."
             fastq-dump --split-3 --minReadLen $MIN_READ_LEN $RUN 1> _4.$i.1_download.$RUN.$SAMPLE.log 2> _4.$i.1_download.$RUN.$SAMPLE.err
+            
+            if [[ $(ls -lh | grep -c _[12].fastq) < 1 ]]
+            then
+            echo "[4.$i.1] $( date +%D.%H:%M:%S) obtendo a amostra $SAMPLE pelo acesso $RUN no NOVO sra ..."
+            sranew/fastq-dump --split-3 --minReadLen $MIN_READ_LEN $RUN 1> _4.$i.1_download2.$RUN.$SAMPLE.log 2> _4.$i.1_download2.$RUN.$SAMPLE.err
+            fi
+            
             grep 'Read' _4.$i.1_download.$RUN.$SAMPLE.log >> resumo.txt
             
             if [[ $(ls -lh | grep -c _[12].fastq) > 1 ]]
@@ -343,7 +370,7 @@ cd to3d && zip -r to3d.zip * 1>/dev/null 2>/dev/null && mv to3d.zip ../ && cd ..
 
 echo "[7    ] $( date +%D.%H:%M:%S) compactando para RESULTS.zip ..."
 zip -r RESULTS.zip out_*/** to3d.zip transcript_gene_mapping.csv experimental_design.csv multiqc_*.html *.log *.err 1>/dev/null 2>/dev/null
-cp RESULTS.zip ../ && cp RESULTS.zip $TEMP_DIR
+cp RESULTS.zip ../ && cp RESULTS.zip to3d.zip $TEMP_DIR
 
 cd ..
 echo $( date +%D.%H:%M:%S) terminado.
