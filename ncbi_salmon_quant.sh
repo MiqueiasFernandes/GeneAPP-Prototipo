@@ -115,10 +115,10 @@ then
  echo "Gerando beds"
  for x in $@
     do 
-        if [[ `echo $x | grep ,` ]]
+        if [[ `echo $x | grep /` ]]
         then
-            GENE=`echo $x | cut -d, -f1`
-            SAMPLE=`echo $x | cut -d, -f2`
+            GENE=`echo $x | cut -d/ -f1`
+            SAMPLE=`echo $x | cut -d/ -f2`
             echo "Gerando GENE $GENE para $SAMPLE ..."
             bamCoverage -b $SAMPLE -o $GENE.$SAMPLE.bed --outFileFormat bedgraph --binSize 3 -p 2 -r $GENE
  exit 1
