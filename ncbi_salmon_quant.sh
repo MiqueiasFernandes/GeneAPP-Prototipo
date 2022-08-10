@@ -110,6 +110,20 @@ if ! grep 'pysam.index(bamFile)' /usr/local/lib/python3.7/dist-packages/deeptool
     rm xtemp bamHandler.py
 fi
 
+if [ $N_ARGS -gt 5 ]
+then
+ echo "Gerando beds"
+ for x in $@
+    do 
+        if [[ `echo $x | grep ,` ]]
+        then
+            GENE=`echo $x | cut -d, -f1`
+            SAMPLE=`echo $x | cut -d, -f2`
+            echo "Gerando GENE $GENE para $SAMPLE ..."
+            bamCoverage -b $SAMPLE -o $GENE.$SAMPLE.bed --outFileFormat bedgraph --binSize 3 -p 2 -r $GENE
+ exit 1
+fi
+
 echo "[2    ] $( date +%D.%H:%M:%S) importando genoma e a anotação ..."
 echo '[2.1  ] baixando o genoma ...'
 wget -O genoma.$tid.fa.gz $1 1> _2.1_genoma.download.log 2> _2.1_genoma.download.err
